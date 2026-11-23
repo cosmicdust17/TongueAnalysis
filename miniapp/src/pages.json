@@ -23,7 +23,7 @@
       "style": {
         "navigationBarTitleText": "分析报告",
         "navigationBarBackgroundColor": "#ffffff",
-        "backgroundColor": "#ffffff",
+        "backgroundColor": "#F3F6F1",
         "pageOrientation": "auto"
       }
     },
@@ -41,7 +41,13 @@
         {
           "path": "history",
           "style": {
-            "navigationBarTitleText": "历史记录"
+            "navigationBarTitleText": "分析记录"
+          }
+        },
+        {
+          "path": "evidence",
+          "style": {
+            "navigationBarTitleText": "知识依据"
           }
         }
       ]
@@ -165,10 +171,12 @@
     }
   ],
   "globalStyle": {
+    "rpxCalcMaxDeviceWidth": 560,
+    "rpxCalcBaseDeviceWidth": 560,
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "舌象智能分析",
-    "navigationBarBackgroundColor": "#f8fcf9",
-    "backgroundColor": "#f2f9f5"
+    "navigationBarBackgroundColor": "#F3F6F1",
+    "backgroundColor": "#F3F6F1"
   },
   "uniIdRouter": {}
 }

@@ -4,13 +4,27 @@ import { onLoad } from "@dcloudio/uni-app";
 import { api, download, toastError } from "@/utils/request";
 import { requireAuth } from "@/stores/auth";
 import type { Report } from "@/types";
-import AppIcon from "@/components/AppIcon.vue";
 import AnnotatedPhoto from "@/components/AnnotatedPhoto.vue";
 const report = ref<Report | null>(null),
   error = ref(""),
-  showEvidence = ref(false),
   exporting = ref(false);
 const view = computed(() => report.value?.content.presentation);
+const age = computed(() => {
+  const value = Number(view.value?.identity?.age);
+  return Number.isInteger(value) && value > 0 ? value : null;
+});
+const gender = computed(() => {
+  const value = view.value?.identity?.gender?.trim();
+  return value && value !== "未填写" ? value : "";
+});
+const readings = computed(() => {
+  const content = view.value;
+  if (!content) return [];
+  return (content.evidence || []).filter(item => content.analysis?.includes("[" + item.number + "]"));
+});
+function openEvidence() {
+  if (report.value) uni.navigateTo({ url: "/subpackages/user/evidence?id=" + encodeURIComponent(report.value.id) });
+}
 onLoad(async (opts) => {
   if (!requireAuth("user")) return;
   try {
@@ -20,7 +34,7 @@ onLoad(async (opts) => {
   }
 });
 async function exportPdf() {
-  if (!report.value) return;
+  if (!report.value || exporting.value) return;
   exporting.value = true;
   try {
     const path = await download("/reports/" + report.value.id + "/pdf");
@@ -42,52 +56,101 @@ async function exportPdf() {
 </script>
 <template>
   <view class="page report-page">
-    <view v-if="error" class="error">{{error}}</view>
-    <view v-if="!view && !error" class="loading">正在读取报告…</view>
+    <view v-if="error" class="error">{{ error }}</view>
+    <view v-else-if="!view" class="loading">正在读取报告…</view>
     <template v-if="report && view">
       <view class="report-header">
-        <view class="report-title">{{view.title}}</view>
-        <view class="muted small">{{view.identity.report_date}}</view>
+        <view class="page-title">舌象综合分析报告</view>
+        <view class="report-meta row wrap">
+          <text>{{ view.identity.report_date }}</text>
+          <text v-if="age">{{ age }} 岁</text>
+          <text v-if="gender">{{ gender }}</text>
+        </view>
       </view>
-      <view class="panel">
-        <view class="small identity">用户 ID：{{view.identity.user_id}}</view>
-        <view class="row between spaced"><text>年龄：{{view.identity.age}}</text><text>性别：{{view.identity.gender}}</text></view>
+
+      <AnnotatedPhoto :file-id="report.image_id" :annotations="report.content.annotations" />
+      <view class="panel symptoms">
+        <view class="card-title">症状自述</view>
+        <view class="reading-text symptoms-body">{{ view.symptoms_text }}</view>
+        <view v-if="view.duration && view.duration !== '未填写'" class="tiny report-meta">持续时间 · {{ view.duration }}</view>
       </view>
-      <AnnotatedPhoto :file-id="report.image_id" :annotations="report.content.annotations"/>
-      <view class="panel"><view class="title">症状自述</view><view class="spaced original-text">{{view.symptoms_text}}</view><view class="muted small spaced">持续时间：{{view.duration}}</view></view>
-      <view class="panel"><view class="title">舌象分析</view>
-        <view class="spaced original-text report-analysis">{{view.analysis}}</view>
+
+      <view class="report-reading">
+        <view class="title reading-heading">舌象分析与教材解读</view>
+        <view class="card-title reading-label">综合分析</view>
+        <view class="reading-text">{{ view.analysis }}</view>
+
+        <template v-if="readings.length">
+          <view class="plain-reading">
+            <view class="reading-label">教材白话解释</view>
+            <view v-for="item in readings" :key="item.number" class="reading-entry reading-text">
+              <text class="source-number">[{{ item.number }}]</text> {{ item.explanation }}
+            </view>
+          </view>
+          <view class="textbook-quote">
+            <view class="reading-label">对应教材原文</view>
+            <view v-for="item in readings" :key="item.number" class="reading-entry">
+              <view class="reading-text"><text class="source-number">[{{ item.number }}]</text> {{ item.quote }}</view>
+              <view v-if="item.reference" class="source-note">{{ item.reference }}</view>
+            </view>
+          </view>
+        </template>
       </view>
-      <view class="panel"><view class="title">日常建议</view><view v-for="item in view.advice_items" :key="item.category" class="spaced"><view class="subtitle">{{item.category}}</view><view class="spaced">{{item.text}}</view></view></view>
-      <view class="panel"><view class="title">知识依据</view><button class="outline spaced" @tap="showEvidence=true">查看知识依据</button></view>
-      <view class="actions section"><button class="primary" :disabled="exporting" :loading="exporting" @tap="exportPdf"><AppIcon name="download" :size="34"/>导出报告</button></view>
-      <view v-if="view.evidence.length" class="references muted small"><view class="reference-title">参考</view><view v-for="item in view.evidence" :key="item.number" class="reference-item">[{{item.number}}] {{item.reference}}</view></view>
-      <view class="muted small spaced">{{view.notice}}</view>
-      <view v-if="showEvidence" class="overlay" @tap="showEvidence=false"><view class="sheet" @tap.stop>
-        <view class="row between section"><view class="title">知识依据</view><view class="chevron" @tap="showEvidence=false">×</view></view>
-        <scroll-view scroll-y class="sheet-scroll"><view v-if="!view.evidence.length" class="empty">暂缺可直接对应的教材依据。</view>
-          <view v-for="item in view.evidence" :key="item.number" class="panel spaced"><view class="subtitle">[{{item.number}}] 白话解读</view><view class="spaced">{{item.explanation}}</view><view class="subtitle spaced">教材原文</view><view class="spaced original-text">{{item.quote}}</view><view class="muted small spaced">{{item.reference}}</view></view>
-        </scroll-view>
-      </view></view>
+
+      <view v-if="view.advice_items?.length" class="panel advice">
+        <view class="title">日常调护建议</view>
+        <view v-for="(item, index) in view.advice_items" :key="index" class="advice-item">
+          <view class="advice-category">{{ item.category }}</view>
+          <view class="reading-text">{{ item.text }}</view>
+        </view>
+      </view>
+
+      <view v-if="view.notice" class="report-notice tiny reading-text">{{ view.notice }}</view>
+
+      <view class="report-actions">
+        <view class="actions report-actions-inner">
+          <button class="outline report-evidence" @tap="openEvidence">查看知识依据</button>
+          <button class="primary" :disabled="exporting" :loading="exporting" @tap="exportPdf">导出 PDF</button>
+        </view>
+      </view>
     </template>
   </view>
 </template>
+
 <style scoped>
-page { background: #fff; }
-.report-page { background: #fff; color: #272727; }
-.report-header { padding: 12rpx 0 24rpx; margin-bottom: 24rpx; border-bottom: 1rpx solid #dedede; }
-.report-title { font-size: 47rpx; font-weight: 700; line-height: 1.35; margin-bottom: 10rpx; color: #214a39; }
-.panel { border-color: #e2e2e2; box-shadow: none; }
-.identity { word-break: break-all; }
-.original-text { white-space: pre-wrap; overflow-wrap: anywhere; }
-.report-analysis { line-height: 1.75; }
-.muted, .empty, .loading { color: #666; }
-.chevron { color: #087f56; }
-.error { color: #272727; background: #f5f5f5; border-color: #ddd; }
-.primary { background: #07875e; color: #fff; }
-.outline { border: 1rpx solid #0a885f; color: #087f56; }
-.overlay { background: rgba(0, 0, 0, .38); }
-.references { border-top: 1rpx solid #dedede; padding-top: 18rpx; }
-.reference-title { font-weight: 600; color: #214a39; }
-.reference-item { margin-top: 10rpx; }
+.report-page { padding-bottom: calc(148rpx + env(safe-area-inset-bottom)); }
+.report-header { padding: 12rpx 0 20rpx; }
+.report-meta { color: var(--secondary-ink); margin-top: 12rpx; overflow-wrap: anywhere; }
+.report-header .report-meta { font-size: var(--font-caption); }
+.report-header .report-meta text + text { padding-left: 16rpx; border-left: 1rpx solid var(--border); }
+.symptoms-body { margin-top: 12rpx; }
+.report-reading { margin: 34rpx 0 30rpx; }
+.reading-heading { border-bottom: 1rpx solid var(--border); padding-bottom: 16rpx; margin-bottom: 22rpx; }
+.reading-label { font-weight: 600; margin-bottom: 10rpx; }
+.plain-reading { background: var(--soft); padding: 22rpx; border-radius: 16rpx; margin: 20rpx 0 10rpx; }
+.reading-entry + .reading-entry { margin-top: 14rpx; }
+.source-number { font-size: var(--font-caption); color: var(--secondary-ink); }
+.advice-item { padding: 18rpx 0; font-size: var(--font-body); }
+.advice-item + .advice-item { border-top: 1rpx solid var(--border); }
+.advice-item:last-child { padding-bottom: 0; }
+.advice-category { font-size: 28rpx; font-weight: 600; color: var(--primary); margin-bottom: 6rpx; }
+.report-notice {
+  border-top: 1rpx solid var(--border);
+  padding: 18rpx 0 0;
+  color: var(--secondary-ink);
+  line-height: 1.7;
+}
+.report-actions {
+  position: fixed;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 14rpx var(--page-edge) calc(14rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid var(--border);
+  background: var(--surface);
+}
+.report-actions-inner { margin: 0 auto; max-width: calc(var(--page-width) - var(--page-edge) - var(--page-edge)); }
+.report-actions button { min-height: 88rpx; border-radius: 14rpx; font-size: var(--font-secondary); }
+.report-actions .report-evidence { border-color: #b6c8bb; font-weight: 500; }
 </style>

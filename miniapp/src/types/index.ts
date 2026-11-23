@@ -31,11 +31,18 @@ export interface Report {
       title: string; identity: {user_id:string;age:string|number;gender:string;report_date:string};
       symptoms_text:string;duration:string;analysis:string;brief:string;
       advice_items:{category:string;text:string}[];
-      evidence:{number:number;explanation:string;quote:string;reference:string}[];
+      evidence: TextbookReading[];
       notice:string;
     };
     annotations?: AnnotationSnapshot;
   };
+}
+export interface TextbookReading {
+  number: number;
+  explanation: string;
+  quote: string;
+  reference: string;
+  chunk_id?: string;
 }
 export interface DetectionBox {
   class_name: string;
@@ -60,6 +67,8 @@ export interface Analysis {
   report_id: string | null;
 }
 export interface Evidence {
+  source_review_status?: string;
+  ocr_status?: string;
   chunk_id?: string;
   location?: {
     chapter: string | null;

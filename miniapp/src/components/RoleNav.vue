@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { useAuth } from "@/stores/auth";
 import AppIcon from "./AppIcon.vue";
-const props = defineProps<{ active: string }>();
+defineProps<{ active: string }>();
 const auth = useAuth();
 const tabs = computed(() =>
   auth.user?.role === "knowledge_admin"
@@ -50,6 +50,12 @@ const tabs = computed(() =>
             url: "/pages/analysis/index",
           },
           {
+            key: "history",
+            label: "分析记录",
+            icon: "clock",
+            url: "/subpackages/user/history",
+          },
+          {
             key: "mine",
             label: "我的",
             icon: "user",
@@ -57,19 +63,20 @@ const tabs = computed(() =>
           },
         ],
 );
-function go(url: string, key: string) {
-  if (key !== props.active) uni.reLaunch({ url });
+function go(url: string) {
+  const pages = getCurrentPages();
+  if ("/" + pages[pages.length - 1]?.route !== url) uni.reLaunch({ url });
 }
 </script>
 <template>
-  <view class="role-nav"
-    ><view
-      v-for="tab in tabs"
-      :key="tab.key"
-      class="nav-item"
-      :class="{ selected: active === tab.key }"
-      @tap="go(tab.url, tab.key)"
-      ><AppIcon :name="tab.icon" :size="42" /><text>{{ tab.label }}</text
-      ><view class="nav-line" /></view
-  ></view>
+  <view class="role-nav">
+    <view class="role-nav-inner">
+      <button v-for="tab in tabs" :key="tab.key" class="nav-item"
+        :class="{ selected: active === tab.key }" :aria-current="active === tab.key ? 'page' : undefined"
+        @tap="go(tab.url)">
+        <view class="nav-icon" aria-hidden="true"><AppIcon :name="tab.icon" :size="38" /></view>
+        <text>{{ tab.label }}</text>
+      </button>
+    </view>
+  </view>
 </template>

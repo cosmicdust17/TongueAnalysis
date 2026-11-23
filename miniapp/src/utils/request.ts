@@ -123,6 +123,7 @@ export function confirmAction(content: string): Promise<boolean> {
   return new Promise((resolve) =>
     uni.showModal({
       title: "确认操作",
+      confirmColor: "#315D49",
       content,
       success: (r) => resolve(r.confirm),
       fail: () => resolve(false),

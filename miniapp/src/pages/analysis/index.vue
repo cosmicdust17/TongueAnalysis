@@ -42,6 +42,7 @@ function resume() {
   uni.navigateTo({ url: "/pages/analysis/result?id=" + active.value });
 }
 async function submit() {
+  if (busy.value) return;
   if (!image.value || !description.value) {
     uni.showToast({ title: "请上传舌象并描述症状", icon: "none" });
     return;
@@ -69,108 +70,111 @@ async function submit() {
 }
 </script>
 <template>
-  <view class="page with-nav"
-    ><PageHero
-      title="从舌象，了解身体"
-      subtitle="记录舌象与症状，获取综合分析" />
-    <view v-if="active" class="notice row between"
-      ><text>有一条分析记录可继续查看</text
-      ><text class="link" @tap="resume">查看 ›</text></view
-    >
-    <view class="panel"
-      ><view class="row section"
-        ><view class="icon-box"><AppIcon name="camera" /></view
-        ><text class="title">上传舌象</text></view
-      ><view class="upload-zone" @tap="choose(['camera', 'album'])"
-        ><image
-          v-if="image"
-          :src="image"
-          mode="aspectFill"
-          class="preview"
-        /><template v-else
-          ><AppIcon name="camera" :size="86" /><view class="subtitle spaced"
-            >拍照或选择照片</view
-          ><view class="muted small">自然光拍摄，舌面清晰</view></template
-        ></view
-      ><view class="actions spaced"
-        ><button class="secondary" @tap="choose(['camera'])">
-          <AppIcon name="camera" :size="34" />拍照</button
-        ><button class="secondary" @tap="choose(['album'])">
-          <AppIcon name="image" :size="34" />相册
-        </button></view
-      ></view
-    >
-    <view class="panel"
-      ><view class="row section"
-        ><view class="icon-box"><AppIcon name="document" /></view
-        ><text class="title">描述症状</text></view
-      ><view class="chips"
-        ><view
-          v-for="tag in tags"
-          :key="tag"
-          class="chip"
-          :class="{ active: selected.includes(tag) }"
-          @tap="toggle(tag)"
-          >{{ selected.includes(tag) ? "✓ " : "" }}{{ tag }}</view
-        ></view
-      ><view class="field-area spaced">
-        <textarea
-          v-model="symptoms"
-          maxlength="200"
-          placeholder="描述近期身体感受，例如容易疲倦、睡眠较浅"
-        /><view class="muted small counter"
-          >{{ description.length }}/200</view
-        ></view
-      ><view class="row between spaced"
-        ><view class="row"
-          ><AppIcon name="clock" :size="34" /><text class="subtitle"
-            >持续时间</text
-          ></view
-        ><picker
-          :range="durations"
-          :value="duration"
-          @change="duration = Number($event.detail.value)"
-          ><view class="picker-value">{{ durations[duration] }}⌄</view></picker
-        ></view
-      ><button
-        class="primary spaced"
-        :loading="busy"
-        :disabled="busy"
-        @tap="submit"
-      >
-        {{ busy ? "正在提交" : "开始分析" }} ›</button
-      ><view class="center muted small spaced">报告生成后自动保存</view></view
-    ><RoleNav active="analysis"
-  /></view>
+  <view class="page with-nav analysis-home">
+    <PageHero class="home-hero" title="从舌象，了解身体" subtitle="记录舌象与症状，获取综合分析" />
+    <button v-if="active" class="resume row between" hover-class="resume-pressed" @tap="resume">
+      <text>上次分析</text>
+      <view class="resume-action">
+        <text>继续查看</text><text class="resume-arrow" aria-hidden="true">›</text>
+      </view>
+    </button>
+
+    <view class="panel">
+      <view class="card-title form-heading">上传舌象</view>
+      <view class="upload-zone" @tap="choose(['camera', 'album'])">
+        <image v-if="image" :src="image" mode="aspectFit" class="preview" aria-label="已选舌象" />
+        <template v-else>
+          <AppIcon name="camera" :size="52" />
+          <view class="upload-title">拍照或选择照片</view>
+          <view class="tiny helper">使用自然光，保持舌面清晰</view>
+        </template>
+      </view>
+      <view class="actions photo-actions">
+        <button class="secondary" @tap="choose(['camera'])">
+          <AppIcon name="camera" :size="32" />{{ image ? "重新拍摄" : "拍照" }}
+        </button>
+        <button class="secondary" @tap="choose(['album'])">
+          <AppIcon name="image" :size="32" />{{ image ? "重新选择" : "相册" }}
+        </button>
+      </view>
+    </view>
+
+    <view class="panel">
+      <view class="card-title form-heading">描述症状</view>
+      <view class="chips">
+        <button v-for="tag in tags" :key="tag" class="chip symptom-chip"
+          :class="{ active: selected.includes(tag) }" :aria-pressed="selected.includes(tag)" @tap="toggle(tag)">
+          <AppIcon v-if="selected.includes(tag)" name="check" :size="22" />{{ tag }}
+        </button>
+      </view>
+      <view class="field-area symptom-field">
+        <textarea v-model="symptoms" :maxlength="200" aria-label="近期症状"
+          placeholder="例如最近容易疲倦、夜里睡得浅" placeholder-style="color:#576B60" />
+        <view class="counter tiny" :class="{ danger: description.length > 200 }">{{ description.length }}/200</view>
+        <view v-if="description.length > 200" class="tiny danger">症状标签与文字合计最多 200 字</view>
+      </view>
+      <picker :range="durations" :value="duration" @change="duration = Number($event.detail.value)">
+        <view class="field select-field duration">
+          <text class="duration-label">持续时间</text>
+          <view class="select-value">{{ durations[duration] }}<view class="disclosure-icon" aria-hidden="true" /></view>
+        </view>
+      </picker>
+    </view>
+
+    <button class="primary" :loading="busy" :disabled="busy" @tap="submit">
+      {{ busy ? "正在提交" : "开始分析" }}
+    </button>
+    <view class="center tiny helper save-note">报告生成后自动保存</view>
+    <RoleNav active="analysis" />
+  </view>
 </template>
+
 <style scoped>
-.upload-zone {
-  height: 300rpx;
-  border: 2rpx dashed #a1d1bb;
+.analysis-home { padding-top: 8rpx; }
+.home-hero :deep(.hero-title) { font-size: 44rpx; }
+.home-hero :deep(.hero-branch) { width: 148rpx; height: 162rpx; }
+.form-heading { margin-bottom: 20rpx; }
+.resume {
+  width: 100%;
+  min-height: 80rpx;
+  margin: 0 0 16rpx;
+  padding: 14rpx 22rpx;
+  border: 0;
   border-radius: 18rpx;
-  background: #f3fbf7;
+  background: #f7f1dd;
+  color: #655635;
+  font-size: var(--font-secondary);
+  text-align: left;
+}
+.resume::after { border: 0; }
+.resume.resume-pressed { background: #efe6ca; }
+.resume-action { display: flex; align-items: center; gap: 10rpx; font-weight: 600; }
+.resume-arrow { font-size: 34rpx; line-height: 1; }
+.upload-zone {
+  height: 260rpx;
+  border: 1rpx dashed #9ab4a3;
+  border-radius: 16rpx;
+  background: #f3f8f4;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
-.preview {
-  height: 100%;
-  width: 100%;
-}
-.counter {
-  text-align: right;
-  padding-bottom: 12rpx;
-}
-.picker-value {
-  padding: 8rpx 25rpx;
-  border: 1rpx solid #d9e5dc;
-  border-radius: 14rpx;
-  background: white;
-  min-width: 240rpx;
-}
-.section {
-  margin-top: 0;
-}
+.preview { height: 100%; width: 100%; }
+.upload-title { margin-top: 10rpx; }
+.helper, .counter { color: var(--secondary-ink); }
+.photo-actions { margin-top: 12rpx; }
+.photo-actions .secondary { background: #eef3ee; }
+.photo-actions button { min-height: 76rpx; border-radius: 16rpx; font-size: var(--font-secondary); }
+.symptom-chip { display: flex; align-items: center; gap: 6rpx; min-height: 60rpx; margin: 0; background: var(--soft); color: var(--primary); font-size: 24rpx; }
+.symptom-chip.active { background: var(--primary); color: #fff; }
+.symptom-chip.active .app-icon { filter: brightness(0) invert(1); }
+.symptom-field { margin-top: 20rpx; padding: 0 20rpx 12rpx; }
+.symptom-field textarea { height: 228rpx; font-size: var(--font-body); line-height: 1.65; }
+.counter { text-align: right; }
+.counter.danger { color: #a94237; }
+.duration { margin-top: 20rpx; }
+.duration-label { font-weight: 600; }
+.save-note { margin-top: 14rpx; }
 </style>

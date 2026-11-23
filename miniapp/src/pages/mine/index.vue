@@ -37,73 +37,70 @@ async function logout() {
 }
 </script>
 <template>
-  <view class="page with-nav"
-    ><view class="panel row profile-card"
-      ><view class="avatar"><AppIcon name="user" :size="80" /></view
-      ><view class="grow"
-        ><view class="title">{{ auth.user?.nickname || roleName }}</view
-        ><view class="tag">{{ roleName }}</view
-        ><view class="muted small spaced">{{
-          isUser ? "记录与回顾每次分析" : "账号：" + auth.user?.username
-        }}</view></view
-      ></view
-    >
-    <view v-if="!isUser" class="title section">管理账号</view
-    ><view class="panel"
-      ><view v-if="isUser" class="menu" @tap="go('/subpackages/user/history')"
-        ><AppIcon name="clock" :size="52" /><view class="grow"
-          ><view class="title">历史记录</view
-          ><view class="muted small">查看已归档的分析报告</view></view
-        ><text class="chevron">›</text></view
-      ><view class="menu" @tap="go('/subpackages/common/profile')"
-        ><AppIcon name="user" :size="52" /><view class="grow"
-          ><view class="subtitle">{{ isUser ? "个人资料" : "账号信息" }}</view
-          ><view v-if="!isUser" class="muted small"
-            >查看与编辑个人资料</view
-          ></view
-        ><text class="chevron">›</text></view
-      ><view
-        v-if="!isUser"
-        class="menu"
-        @tap="go('/subpackages/common/activity')"
-        ><AppIcon name="document" :size="52" /><view class="grow"
-          ><view class="subtitle">我的操作记录</view
-          ><view class="muted small"
-            >查看{{
-              auth.user?.role === "knowledge_admin" ? "知识管理" : "运维"
-            }}操作记录</view
-          ></view
-        ><text class="chevron">›</text></view
-      ></view
-    >
-    <view class="panel"
-      ><view class="menu" @tap="go('/subpackages/common/security')"
-        ><AppIcon name="lock" :size="52" /><view class="grow subtitle"
-          >登录安全</view
-        ><text class="chevron">›</text></view
-      ><view class="menu" @tap="go('/subpackages/common/help')"
-        ><AppIcon name="help" :size="52" /><view class="grow subtitle"
-          >使用帮助</view
-        ><text class="chevron">›</text></view
-      ></view
-    ><button class="outline spaced" @tap="logout">退出登录</button
-    ><view class="footer-mark"
-      ><image src="/static/branch.png" mode="aspectFit" /><view
-        >舌象智能分析系统</view
-      ></view
-    ><RoleNav active="mine"
-  /></view>
+  <view class="page with-nav mine-page">
+    <view class="panel row profile-card">
+      <view class="avatar"><AppIcon name="user" :size="58" /></view>
+      <view class="grow">
+        <view class="nickname">{{ auth.user?.nickname || roleName }}</view>
+        <view class="tag identity-tag">{{ roleName }}</view>
+        <view v-if="auth.user?.username" class="tiny profile-detail">{{ auth.user.username }}</view>
+      </view>
+    </view>
+
+    <view v-if="!isUser" class="card-title section">管理账号</view>
+    <view class="panel menu-list">
+      <button class="menu" hover-class="menu-pressed" @tap="go('/subpackages/common/profile')">
+        <AppIcon name="user" :size="36" />
+        <view class="grow">
+          <view>{{ isUser ? "个人资料" : "账号信息" }}</view>
+          <view class="menu-description">修改昵称、年龄和性别</view>
+        </view>
+        <text class="chevron" aria-hidden="true">›</text>
+      </button>
+      <button v-if="!isUser" class="menu" hover-class="menu-pressed" @tap="go('/subpackages/common/activity')">
+        <AppIcon name="document" :size="36" />
+        <view class="grow">
+          <view>我的操作记录</view>
+          <view class="menu-description">查看{{ auth.user?.role === "knowledge_admin" ? "知识管理" : "运维" }}操作记录</view>
+        </view>
+        <text class="chevron" aria-hidden="true">›</text>
+      </button>
+      <button class="menu" hover-class="menu-pressed" @tap="go('/subpackages/common/security')">
+        <AppIcon name="lock" :size="36" />
+        <view class="grow">
+          <view>登录安全</view>
+          <view class="menu-description">管理登录密码</view>
+        </view>
+        <text class="chevron" aria-hidden="true">›</text>
+      </button>
+      <button class="menu" hover-class="menu-pressed" @tap="go('/subpackages/common/help')">
+        <AppIcon name="help" :size="36" />
+        <view class="grow">
+          <view>使用帮助</view>
+          <view class="menu-description">拍摄方法与报告说明</view>
+        </view>
+        <text class="chevron" aria-hidden="true">›</text>
+      </button>
+    </view>
+    <button class="outline logout" @tap="logout">退出登录</button>
+    <RoleNav active="mine" />
+  </view>
 </template>
+
 <style scoped>
-.profile-card {
-  padding: 32rpx 25rpx;
-  margin-top: 15rpx;
-  gap: 24rpx;
-}
-.menu:first-child {
-  padding-top: 8rpx;
-}
-.menu:last-child {
-  padding-bottom: 8rpx;
-}
+.profile-card { gap: 24rpx; padding: 28rpx 24rpx; margin-bottom: 26rpx; border: 0; }
+.profile-card .avatar { width: 112rpx; height: 112rpx; }
+.profile-card .avatar :deep(.app-icon) { width: 58rpx !important; height: 58rpx !important; }
+.nickname { font-size: 32rpx; font-weight: 600; overflow-wrap: anywhere; line-height: 1.4; }
+.identity-tag { font-size: var(--font-caption); margin-top: 4rpx; padding: 0; color: var(--primary); background: transparent; }
+.profile-detail { margin-top: 4rpx; color: var(--secondary-ink); overflow-wrap: anywhere; }
+.menu-list { padding: 0 24rpx; border: 0; }
+.menu { width: 100%; min-height: 114rpx; background: var(--surface); color: var(--ink); padding: 18rpx 0; text-align: left; border: 0; border-radius: 0; line-height: 1.45; }
+.menu::after { border: 0; }
+.menu.menu-pressed { opacity: 0.72; }
+.menu-list .menu + .menu { border-top: 1rpx solid var(--border); }
+.menu .grow { font-size: var(--font-body); font-weight: 600; }
+.menu-description { font-size: var(--font-secondary); color: var(--secondary-ink); margin-top: 5rpx; font-weight: 400; }
+.menu .chevron { font-size: 34rpx; }
+.logout { margin-top: 14rpx; border-color: #b6c8bb; background: transparent; }
 </style>
