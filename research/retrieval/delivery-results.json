@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-19",
+  "bibliography": {
+    "source_title": "中医诊断学",
+    "edition": "第5版（新世纪第五版；全国高等中医药院校规划教材第十一版）",
+    "publisher": "中国中医药出版社",
+    "publication_date": "2021-06",
+    "isbn": "978-7-5132-6849-3",
+    "copyright_pdf_page": 2
+  },
+  "pdf_sha256": "88b5d32ecb76a1dd85a35e00b71ab3ee02a96424a33dc32a71a204d12e996fbe",
+  "selected_pdf_ranges": [
+    [
+      55,
+      71
+    ],
+    [
+      87,
+      91
+    ],
+    [
+      99,
+      104
+    ]
+  ],
+  "pages": 28,
+  "chunks": 411,
+  "vector_dimension": 512,
+  "index_id": "8b63aa40026e070b33e62d0b",
+  "ocr_review_pdf_pages": [
+    57,
+    64
+  ],
+  "printed_page_status": "OCR header detected; manual verification pending",
+  "paragraph_status": "Unknown printed paragraph number; layout block and bbox saved",
+  "real_post_verification": [
+    {
+      "file": "symptoms.json",
+      "status": 200,
+      "elapsed_ms": 8461.72
+    },
+    {
+      "file": "symptoms-tongue.json",
+      "status": 200,
+      "elapsed_ms": 9571.768
+    }
+  ],
+  "tests_passed": 9,
+  "miniapp_typecheck": "passed",
+  "miniapp_weixin_build": "passed",
+  "neo4j_real_ingest": "completed: 411 real chunks, 377 eligible, 34 OCR pending",
+  "qwen_real_extraction": "completed: 12 real chunks, 30 pending candidates",
+  "human_quality_evaluation": "pending: reviewed labels needed",
+  "fine_tuning": "pending: reviewed train and validation labels needed",
+  "runtime": {
+    "torch": "2.10.0",
+    "sentence-transformers": "5.2.2",
+    "transformers": "5.0.0",
+    "neo4j": "6.4.1",
+    "fastapi": "0.115.6",
+    "numpy": "1.26.4",
+    "pymupdf": "2.1",
+    "rapidocr_onnxruntime": "1.4.4",
+    "datasets": "4.5.0",
+    "accelerate": "1.16.0",
+    "pyarrow": "19.0.1"
+  },
+  "latest_real_delivery": "real-delivery-results.json",
+  "latest_details": "REAL_RESULTS.md"
+}

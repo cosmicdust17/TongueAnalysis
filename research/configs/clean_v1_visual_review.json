@@ -1,0 +1,15 @@
+{
+  "reviewer": "Codex visual inspection; not clinical annotation adjudication",
+  "viewed_contact_sheets": ["results/clean_v1_planning/priority_0.jpg", "results/clean_v1_planning/priority_1.jpg"],
+  "decisions": [
+    {"group_id": "near_0330", "observation": "Same circular crop, central red patch and speckle pattern; likely same capture with encoding/scale differences."},
+    {"group_id": "near_0584", "observation": "Same circular crop, central patch and surrounding marks; likely same capture."},
+    {"group_id": "near_0003", "observation": "Matching branched fissures and tongue outline; likely same capture after resizing/cropping."},
+    {"group_id": "near_0004", "observation": "Matching central fissure, lateral marks and background; likely same capture."},
+    {"group_id": "near_0006", "observation": "Matching jacket buttons, mouth and fissures; likely same capture after resizing."},
+    {"group_id": "near_0011", "observation": "Matching bright lower-left patch, tongue marks and framing; likely same capture."},
+    {"group_id": "near_0022", "observation": "Matching mouth boundary, coating pattern and dark side background; likely same capture."},
+    {"group_id": "near_0025", "observation": "Matching distinctive branched fissures and tongue outline; likely same capture."}
+  ],
+  "action_for_all_viewed_pairs": "quarantine both endpoints pending source/annotation adjudication; no automatic deletion"
+}

@@ -1,0 +1,4 @@
+-- Optional for a manually installed MySQL server. Replace the password BEFORE execution.
+-- Use the same password in DATABASE_URL. Docker Compose creates this user automatically.
+CREATE USER IF NOT EXISTS 'tongue_app'@'localhost' IDENTIFIED BY 'REPLACE_WITH_YOUR_PASSWORD';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES ON tongue_analysis.* TO 'tongue_app'@'localhost';

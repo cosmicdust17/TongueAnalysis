@@ -1,0 +1,3 @@
+{"query_id":"train-001","split":"train","symptoms":"填写独立症状描述","tongue_features":"填写舌象特征","relevant_chunk_ids":[],"hard_negative_chunk_ids":[],"human_verified":false,"reviewer":null,"is_demo":false}
+{"query_id":"validation-001","split":"validation","symptoms":"填写不同于训练集的验证查询","tongue_features":"填写舌象特征","relevant_chunk_ids":[],"hard_negative_chunk_ids":[],"human_verified":false,"reviewer":null,"is_demo":false}
+{"query_id":"test-001","split":"test","symptoms":"填写独立留出的测试查询","tongue_features":"填写舌象特征","relevant_chunk_ids":[],"hard_negative_chunk_ids":[],"human_verified":false,"reviewer":null,"is_demo":false}

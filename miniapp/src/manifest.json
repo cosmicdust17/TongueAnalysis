@@ -1,0 +1,26 @@
+{
+  "name": "舌象智能分析",
+  "appid": "wx52e06a7378af4fab",
+  "description": "舌象与症状记录、知识图谱与分析报告",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "vueVersion": "3",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "wx52e06a7378af4fab",
+    "setting": {
+      "urlCheck": true,
+      "es6": true,
+      "minified": true
+    },
+    "usingComponents": true,
+    "optimization": {
+      "subPackages": true
+    }
+  },
+  "h5": {
+    "router": {
+      "mode": "hash"
+    }
+  }
+}

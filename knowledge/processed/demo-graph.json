@@ -1,0 +1,137 @@
+{
+  "sources": [
+    {
+      "id": "demo-source-tongue",
+      "title": "舌诊联调示例资料",
+      "citation": "系统自建联调样例；不是医学参考文献，仅用于验证来源追溯。",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-source-symptom",
+      "title": "症状联调示例资料",
+      "citation": "系统自建联调样例；不是临床知识，仅用于验证图谱关联。",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "demo-pale",
+      "name": "舌色偏淡",
+      "kind": "舌象特征",
+      "text": "联调示例：舌色偏淡用于演示条目维护、关联检索和来源追溯，此处不提供医学解释。",
+      "source_id": "demo-source-tongue",
+      "aliases": [
+        "淡舌"
+      ],
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-coat",
+      "name": "苔薄白",
+      "kind": "舌象特征",
+      "text": "联调示例：苔薄白用于演示条目维护、关联检索和来源追溯，此处不提供医学解释。",
+      "source_id": "demo-source-tongue",
+      "aliases": [
+        "薄白苔"
+      ],
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-dry",
+      "name": "口干",
+      "kind": "症状",
+      "text": "联调示例：口干用于演示条目维护、关联检索和来源追溯，此处不提供医学解释。",
+      "source_id": "demo-source-symptom",
+      "aliases": [],
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-tired",
+      "name": "乏力",
+      "kind": "症状",
+      "text": "联调示例：乏力用于演示条目维护、关联检索和来源追溯，此处不提供医学解释。",
+      "source_id": "demo-source-symptom",
+      "aliases": [
+        "疲倦",
+        "疲乏"
+      ],
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-sleep",
+      "name": "睡眠不佳",
+      "kind": "症状",
+      "text": "联调示例：睡眠不佳用于演示条目维护、关联检索和来源追溯，此处不提供医学解释。",
+      "source_id": "demo-source-symptom",
+      "aliases": [
+        "睡眠较浅"
+      ],
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-syndrome",
+      "name": "示例证候（待审核）",
+      "kind": "证候",
+      "text": "仅供审核流程联调，不进入已发布知识检索。",
+      "source_id": "demo-source-symptom",
+      "aliases": [],
+      "status": "pending",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    }
+  ],
+  "relations": [
+    {
+      "id": "demo-rel-1",
+      "source": "demo-tired",
+      "target": "demo-pale",
+      "kind": "相关",
+      "source_id": "demo-source-symptom",
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-rel-2",
+      "source": "demo-tired",
+      "target": "demo-coat",
+      "kind": "相关",
+      "source_id": "demo-source-symptom",
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-rel-3",
+      "source": "demo-tired",
+      "target": "demo-dry",
+      "kind": "相关",
+      "source_id": "demo-source-symptom",
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    },
+    {
+      "id": "demo-rel-4",
+      "source": "demo-tired",
+      "target": "demo-sleep",
+      "kind": "伴随",
+      "source_id": "demo-source-symptom",
+      "status": "published",
+      "is_demo": true,
+      "updated_at": "2026-11-17T00:00:00+00:00"
+    }
+  ]
+}

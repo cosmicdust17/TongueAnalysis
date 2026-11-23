@@ -1,0 +1,87 @@
+{
+  "is_demo": true,
+  "split": "test",
+  "labels_hash": "97147cc08b1ce3be76739d9e3331172328e7a6e43e769f174af106657f6f45fe",
+  "index": {
+    "corpus_hash": "a630dcb90707e9e166a555821cf3265e2bbe592fa819dda8da5f0345c3e19f7b",
+    "embedding": "SYNTHETIC-CONTRACT-ONLY",
+    "embedding_identity": "SYNTHETIC-CONTRACT-ONLY",
+    "dimension": 3,
+    "count": 3,
+    "vectors_hash": "f488dc71b5c812b9e4da3dcaaa75d49fe0bb17fa0580ea9c7d15f43593936a7b",
+    "index_id": "41422aaadeccc6ba1831b87e"
+  },
+  "embedding": "SYNTHETIC-CONTRACT-ONLY",
+  "reranker": "SYNTHETIC-CONTRACT-ONLY",
+  "candidate_count": 3,
+  "k": 2,
+  "modes": {
+    "symptoms": {
+      "recall_at_k": 1.0,
+      "mrr_at_k": 1.0,
+      "vector_recall_at_k": 1.0,
+      "vector_mrr_at_k": 1.0,
+      "mean_ms": 0.019600000086938962,
+      "queries": [
+        {
+          "recall": 1.0,
+          "rr": 1.0,
+          "vector_recall": 1.0,
+          "vector_rr": 1.0,
+          "query_id": "demo-2",
+          "elapsed_ms": 0.020700001186924055,
+          "ranked_ids": [
+            "demo-0",
+            "demo-1"
+          ]
+        },
+        {
+          "recall": 1.0,
+          "rr": 1.0,
+          "vector_recall": 1.0,
+          "vector_rr": 1.0,
+          "query_id": "demo-3",
+          "elapsed_ms": 0.01849999898695387,
+          "ranked_ids": [
+            "demo-1",
+            "demo-0"
+          ]
+        }
+      ]
+    },
+    "symptoms+tongue": {
+      "recall_at_k": 1.0,
+      "mrr_at_k": 1.0,
+      "vector_recall_at_k": 1.0,
+      "vector_mrr_at_k": 1.0,
+      "mean_ms": 0.01745000008668285,
+      "queries": [
+        {
+          "recall": 1.0,
+          "rr": 1.0,
+          "vector_recall": 1.0,
+          "vector_rr": 1.0,
+          "query_id": "demo-2",
+          "elapsed_ms": 0.019900002371286973,
+          "ranked_ids": [
+            "demo-0",
+            "demo-1"
+          ]
+        },
+        {
+          "recall": 1.0,
+          "rr": 1.0,
+          "vector_recall": 1.0,
+          "vector_rr": 1.0,
+          "query_id": "demo-3",
+          "elapsed_ms": 0.014999997802078724,
+          "ranked_ids": [
+            "demo-1",
+            "demo-0"
+          ]
+        }
+      ]
+    }
+  },
+  "reranker_identity": "SYNTHETIC-CONTRACT-ONLY"
+}

@@ -1,0 +1,174 @@
+{
+  "pages": [
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/analysis/index",
+      "style": {
+        "navigationBarTitleText": "舌象分析"
+      }
+    },
+    {
+      "path": "pages/analysis/result",
+      "style": {
+        "navigationBarTitleText": "分析状态"
+      }
+    },
+    {
+      "path": "pages/report/index",
+      "style": {
+        "navigationBarTitleText": "分析报告",
+        "navigationBarBackgroundColor": "#ffffff",
+        "backgroundColor": "#ffffff",
+        "pageOrientation": "auto"
+      }
+    },
+    {
+      "path": "pages/mine/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "subpackages/user",
+      "pages": [
+        {
+          "path": "history",
+          "style": {
+            "navigationBarTitleText": "历史记录"
+          }
+        }
+      ]
+    },
+    {
+      "root": "subpackages/common",
+      "pages": [
+        {
+          "path": "profile",
+          "style": {
+            "navigationBarTitleText": "个人资料"
+          }
+        },
+        {
+          "path": "activity",
+          "style": {
+            "navigationBarTitleText": "我的操作记录"
+          }
+        },
+        {
+          "path": "security",
+          "style": {
+            "navigationBarTitleText": "登录安全"
+          }
+        },
+        {
+          "path": "help",
+          "style": {
+            "navigationBarTitleText": "使用帮助"
+          }
+        }
+      ]
+    },
+    {
+      "root": "subpackages/knowledge-admin",
+      "pages": [
+        {
+          "path": "library",
+          "style": {
+            "navigationBarTitleText": "知识库"
+          }
+        },
+        {
+          "path": "graph",
+          "style": {
+            "navigationBarTitleText": "知识管理"
+          }
+        },
+        {
+          "path": "entity-edit",
+          "style": {
+            "navigationBarTitleText": "实体维护"
+          }
+        },
+        {
+          "path": "relations",
+          "style": {
+            "navigationBarTitleText": "关系管理"
+          }
+        },
+        {
+          "path": "relation-edit",
+          "style": {
+            "navigationBarTitleText": "关系维护"
+          }
+        },
+        {
+          "path": "sources",
+          "style": {
+            "navigationBarTitleText": "来源文档"
+          }
+        },
+        {
+          "path": "source-edit",
+          "style": {
+            "navigationBarTitleText": "新增来源"
+          }
+        },
+        {
+          "path": "review",
+          "style": {
+            "navigationBarTitleText": "审核发布"
+          }
+        }
+      ]
+    },
+    {
+      "root": "subpackages/ops-admin",
+      "pages": [
+        {
+          "path": "overview",
+          "style": {
+            "navigationBarTitleText": "系统运维"
+          }
+        },
+        {
+          "path": "logs",
+          "style": {
+            "navigationBarTitleText": "运行日志"
+          }
+        },
+        {
+          "path": "users",
+          "style": {
+            "navigationBarTitleText": "用户管理"
+          }
+        },
+        {
+          "path": "alerts",
+          "style": {
+            "navigationBarTitleText": "告警处理"
+          }
+        },
+        {
+          "path": "services",
+          "style": {
+            "navigationBarTitleText": "服务监控"
+          }
+        }
+      ]
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "舌象智能分析",
+    "navigationBarBackgroundColor": "#f8fcf9",
+    "backgroundColor": "#f2f9f5"
+  },
+  "uniIdRouter": {}
+}

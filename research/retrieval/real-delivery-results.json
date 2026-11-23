@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-19",
+  "neo4j_version": "5.26.33",
+  "neo4j_uri": "bolt://127.0.0.1:17687",
+  "return_1": 1,
+  "real_chunks": 411,
+  "real_eligible_chunks": 377,
+  "ocr_pending_chunks": 34,
+  "vector_dimension": 512,
+  "index": {
+    "name": "retrieval_8b63aa40026e070b33e62d0b",
+    "state": "ONLINE",
+    "populationPercent": 100.0,
+    "options": {
+      "indexConfig": {
+        "vector.dimensions": 512,
+        "vector.hnsw.m": 16,
+        "vector.quantization.enabled": true,
+        "vector.similarity_function": "COSINE",
+        "vector.hnsw.ef_construction": 100
+      },
+      "indexProvider": "vector-2.0"
+    }
+  },
+  "repeated_imports": [
+    {
+      "iteration": 1,
+      "count": 411,
+      "ids_hash": "85dee26ac9c499ec46ca5f4e3a184de832e06b56419f89e78adbe5289d0a2c72",
+      "eligible": 377,
+      "pending_ocr": 34
+    },
+    {
+      "iteration": 2,
+      "count": 411,
+      "ids_hash": "85dee26ac9c499ec46ca5f4e3a184de832e06b56419f89e78adbe5289d0a2c72",
+      "eligible": 377,
+      "pending_ocr": 34
+    }
+  ],
+  "http_status": 200,
+  "http_backend": "neo4j",
+  "http_evidence_count": 5,
+  "top_chunk_id": "ch_600fc306cc5a9b620484b8a3",
+  "qwen_model": "Qwen/Qwen3-VL-2B-Instruct",
+  "qwen_revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+  "real_selected_chunks": 12,
+  "real_candidates": 30,
+  "candidate_statuses": {
+    "pending": 30
+  },
+  "rejected_quote_mismatches": 5,
+  "candidates_with_conditions": 4,
+  "candidates_with_review_warnings": 25,
+  "real_published_relations": 0,
+  "synthetic_published_relations_admin_only": 1,
+  "tests_passed": 13,
+  "service": "http://127.0.0.1:8011",
+  "review_csv": "data/qwen-batch/review.csv",
+  "details": "REAL_RESULTS.md"
+}

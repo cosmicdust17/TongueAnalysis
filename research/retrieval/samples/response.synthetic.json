@@ -1,0 +1,40 @@
+{
+  "evidence": [
+    {
+      "chunk_id": "demo-0",
+      "text": "测试寒象：畏寒，舌淡。",
+      "source_title": "合成测试资料（非教材）",
+      "edition": null,
+      "location": {
+        "chapter": "测试",
+        "pdf_page": null,
+        "printed_page": null,
+        "paragraph": null
+      },
+      "is_demo": true,
+      "vector_score": 0.984731927834662,
+      "score": 8.0
+    },
+    {
+      "chunk_id": "demo-1",
+      "text": "测试热象：口渴，舌红。",
+      "source_title": "合成测试资料（非教材）",
+      "edition": null,
+      "location": {
+        "chapter": "测试",
+        "pdf_page": null,
+        "printed_page": null,
+        "paragraph": null
+      },
+      "is_demo": true,
+      "vector_score": 0.816496580927726,
+      "score": 5.0
+    }
+  ],
+  "elapsed_ms": 0.093,
+  "index_id": "41422aaadeccc6ba1831b87e",
+  "candidate_count": 3,
+  "embedding": "SYNTHETIC-CONTRACT-ONLY",
+  "reranker": "SYNTHETIC-CONTRACT-ONLY",
+  "is_demo": true
+}

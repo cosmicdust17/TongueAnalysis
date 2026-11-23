@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tongue knowledge graph interchange v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["sources", "nodes", "relations"],
+  "properties": {
+    "sources": {"type": "array", "maxItems": 1000, "items": {"type": "object", "required": ["id", "title", "citation"], "properties": {"id": {"type": "string", "minLength": 1, "maxLength": 36}, "title": {"type": "string", "minLength": 1}, "citation": {"type": "string", "minLength": 1}, "is_demo": {"type": "boolean"}}}},
+    "nodes": {"type": "array", "maxItems": 1000, "items": {"type": "object", "required": ["id", "name", "kind", "text", "source_id"], "properties": {"id": {"type": "string", "minLength": 1, "maxLength": 36}, "name": {"type": "string"}, "kind": {"enum": ["舌象特征", "症状", "证候"]}, "text": {"type": "string"}, "source_id": {"type": "string"}, "aliases": {"type": "array", "items": {"type": "string"}}}}},
+    "relations": {"type": "array", "maxItems": 2000, "items": {"type": "object", "required": ["id", "source", "target", "kind", "source_id"], "properties": {"id": {"type": "string", "minLength": 1, "maxLength": 36}, "source": {"type": "string"}, "target": {"type": "string"}, "kind": {"enum": ["相关", "伴随", "支持"]}, "source_id": {"type": "string"}}}}
+  }
+}

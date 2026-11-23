@@ -1,0 +1,9 @@
+{
+  "hongshe": {"name":"红舌","description":"模型标注的区域呈较明显的红色色调；颜色会受到光线、曝光和拍摄条件影响。","color":"#c43d45"},
+  "zishe": {"name":"紫舌","description":"模型标注的区域呈紫色或暗紫色色调，需结合原图和拍摄条件观察。","color":"#8045a1"},
+  "liewenshe": {"name":"裂纹","description":"模型标注的舌面区域可见线状或沟状纹理；未检出不代表裂纹不存在。","color":"#d46c16"},
+  "chihenshe": {"name":"齿痕","description":"模型标注的舌缘区域呈波浪状或类似牙齿压迹的轮廓。","color":"#247f9c"},
+  "baitaishe": {"name":"白苔","description":"模型标注的舌面覆盖区域呈白色或灰白色色调。","color":"#44748a"},
+  "huangtaishe": {"name":"黄苔","description":"模型标注的舌面覆盖区域呈黄色色调；需注意光源对颜色的影响。","color":"#9b7410"},
+  "heitaishe": {"name":"黑苔","description":"模型标注的舌面覆盖区域呈深褐色或黑色色调。","color":"#534a46"}
+}

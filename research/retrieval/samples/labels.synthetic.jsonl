@@ -1,0 +1,4 @@
+{"query_id": "demo-0", "split": "train", "symptoms": "测试寒", "tongue_features": "舌淡", "relevant_chunk_ids": ["demo-0"], "hard_negative_chunk_ids": ["demo-1"], "human_verified": false, "reviewer": null, "is_demo": true}
+{"query_id": "demo-1", "split": "validation", "symptoms": "测试口渴", "tongue_features": "舌红", "relevant_chunk_ids": ["demo-1"], "hard_negative_chunk_ids": ["demo-0"], "human_verified": false, "reviewer": null, "is_demo": true}
+{"query_id": "demo-2", "split": "test", "symptoms": "测试畏寒", "tongue_features": "舌淡", "relevant_chunk_ids": ["demo-0"], "hard_negative_chunk_ids": ["demo-1"], "human_verified": false, "reviewer": null, "is_demo": true}
+{"query_id": "demo-3", "split": "test", "symptoms": "测试热与渴", "tongue_features": "舌红", "relevant_chunk_ids": ["demo-1"], "hard_negative_chunk_ids": ["demo-0"], "human_verified": false, "reviewer": null, "is_demo": true}

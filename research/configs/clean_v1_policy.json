@@ -1,0 +1,14 @@
+{
+  "version": "tongue-clean-v1",
+  "seed": 42,
+  "selected_original_ids": [2, 3, 7, 8, 9, 10, 11],
+  "image_quarantine_if_present": [1, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+  "known_out_of_scope_ids": [0, 4, 5, 6],
+  "target_box_max_edge_tolerance_pixels": 1.0,
+  "negative_samples": "none; zero-target images quarantined because absence has not been confirmed",
+  "exact_duplicate_policy": "require all members target annotations to agree within tolerance; otherwise quarantine whole group; prefer original test then val then train, lexical path tie-break",
+  "near_duplicate_policy": "quarantine both endpoints of unresolved cross-split candidates; do not infer duplicate identity from score or merge labels; retain same-split candidates with unresolved status",
+  "cross_format_policy": "require TXT target set to agree with same-split, same-name, file-SHA-identical COCO image target set; use COCO only as corroboration, never import extra boxes",
+  "split_policy": "preserve original split of each retained image; no random resplitting",
+  "xml_policy": "not used as label authority due filename and dimension problems"
+}
