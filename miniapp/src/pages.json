@@ -22,8 +22,8 @@
       "path": "pages/report/index",
       "style": {
         "navigationBarTitleText": "分析报告",
-        "navigationBarBackgroundColor": "#ffffff",
-        "backgroundColor": "#ffffff",
+        "navigationBarBackgroundColor": "#53612F",
+        "backgroundColor": "#F4F0E2",
         "pageOrientation": "auto"
       }
     },
@@ -41,7 +41,17 @@
         {
           "path": "history",
           "style": {
-            "navigationBarTitleText": "历史记录"
+            "navigationBarTitleText": "分析记录"
+          }
+        },
+        {
+          "path": "trends",
+          "style": { "navigationBarTitleText": "健康趋势" }
+        },
+        {
+          "path": "evidence",
+          "style": {
+            "navigationBarTitleText": "知识依据"
           }
         }
       ]
@@ -165,10 +175,12 @@
     }
   ],
   "globalStyle": {
-    "navigationBarTextStyle": "black",
+    "rpxCalcMaxDeviceWidth": 560,
+    "rpxCalcBaseDeviceWidth": 560,
+    "navigationBarTextStyle": "white",
     "navigationBarTitleText": "舌象智能分析",
-    "navigationBarBackgroundColor": "#f8fcf9",
-    "backgroundColor": "#f2f9f5"
+    "navigationBarBackgroundColor": "#53612F",
+    "backgroundColor": "#F4F0E2"
   },
   "uniIdRouter": {}
 }

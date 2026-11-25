@@ -67,9 +67,11 @@ async function save() {
         :range="genders"
         :value="gender"
         @change="gender = Number($event.detail.value)"
-        ><view class="field picker">{{ genders[gender] }} ⌄</view></picker
-      ><view class="muted small spaced">用户 ID：{{ auth.user?.id }}</view
-      ><button
+        ><view class="field select-field">
+          <text class="select-value">{{ genders[gender] }}</text>
+          <view class="disclosure-icon" aria-hidden="true" />
+        </view></picker
+      ><view v-if="auth.user && auth.user.role !== 'user'" class="muted small spaced">用户 ID：{{ auth.user.id }}</view><button
         class="primary spaced"
         :disabled="busy"
         :loading="busy"
@@ -80,8 +82,3 @@ async function save() {
     ></view
   >
 </template>
-<style scoped>
-.picker {
-  padding: 22rpx;
-}
-</style>
