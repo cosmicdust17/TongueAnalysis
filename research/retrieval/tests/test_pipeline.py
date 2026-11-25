@@ -26,6 +26,24 @@ def test_metrics():
     assert metrics([], ['a'], 3) == {'recall': 0, 'rr': 0}
 
 
+def test_graph_only_does_not_load_vector_models(monkeypatch):
+    def unexpected_models():
+        pytest.fail('Graph mode must not load vector models')
+
+    class Store:
+        def graph(self, chunk_id, limit):
+            assert (chunk_id, limit) == ('source', 3)
+            return [{'relation': {'chunk_id': chunk_id}}]
+
+    monkeypatch.setattr('research.retrieval.service.Models', unexpected_models)
+    with TestClient(create_app(store=Store(), graph_only=True)) as client:
+        assert client.get('/health').json()['mode'] == 'graph-only'
+        assert client.get('/v1/graph', params={'chunk_id': 'source', 'limit': 3}).json() == {
+            'relations': [{'relation': {'chunk_id': 'source'}}],
+        }
+        assert client.post('/v1/retrieve', json={'symptoms': '畏寒'}).status_code == 503
+
+
 def test_query_validation():
     assert query_text('畏寒', '舌淡') == '症状：畏寒；舌象：舌淡'
     with pytest.raises(ValueError):

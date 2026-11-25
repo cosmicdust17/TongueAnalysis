@@ -1,6 +1,8 @@
 from uuid import uuid4
+import asyncio
 import hashlib
 import json
+import logging
 from pathlib import Path
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -13,6 +15,8 @@ from app.models import User, StoredFile, Document
 from app.schemas import EntityIn, RelationIn, DocumentIn
 from app.repositories.graph_repository import graph_repository, GraphConflict, stamp
 from app.services.common import audit
+
+logger = logging.getLogger(__name__)
 
 def require_knowledge():
     if not settings().knowledge_retrieval_enabled:
@@ -29,13 +33,37 @@ async def textbook_graph(user: User = Depends(admin)):
     graph_url = config.retrieval_graph_base_url or config.retrieval_base_url
     if not graph_url:
         raise HTTPException(503, '尚未配置教材图谱服务地址')
+    # The miniapp times out after 20 seconds. Keep the graph request inside that budget.
+    timeout = min(config.retrieval_timeout_seconds, 8)
     try:
-        async with httpx.AsyncClient(timeout=config.retrieval_timeout_seconds, trust_env=False) as client:
+        async with asyncio.timeout(timeout), httpx.AsyncClient(timeout=timeout, trust_env=False) as client:
             response = await client.get(graph_url.rstrip('/') + '/v1/graph', params={'limit': 500})
-            response.raise_for_status()
-            relations = response.json()['relations']
+        response.raise_for_status()
+        relations = response.json()['relations']
+        if not isinstance(relations, list):
+            raise ValueError('Expected textbook graph relations list')
+    except (TimeoutError, httpx.TimeoutException):
+        logger.warning('Textbook graph upstream timed out within %s seconds', timeout)
+        raise HTTPException(504, '教材图谱服务响应超时，请稍后重试') from None
+    except httpx.RequestError as exc:
+        logger.warning('Textbook graph upstream unavailable: %s', type(exc).__name__)
+        raise HTTPException(503, '无法连接教材图谱服务，请检查服务是否已启动') from None
+    except (httpx.HTTPStatusError, ValueError, KeyError, TypeError) as exc:
+        logger.warning('Textbook graph upstream response error: %s', type(exc).__name__)
+        raise HTTPException(503, '教材图谱服务暂时不可用，请检查 Neo4j 连接后重试') from None
+
+    # Citation verification is optional. If its file cannot be read, leave locations unverified.
+    reviews = {}
+    try:
         review_path = Path(config.retrieval_review_file)
-        reviews = json.loads(review_path.read_text(encoding='utf-8')) if review_path.is_file() else {}
+        if review_path.is_file():
+            reviews = json.loads(review_path.read_text(encoding='utf-8-sig'))
+            if not isinstance(reviews, dict):
+                raise ValueError('Expected a citation review mapping')
+    except (OSError, ValueError) as exc:
+        logger.warning('Textbook citation review unavailable: %s', type(exc).__name__)
+        reviews = {}
+    try:
         published = []
         for edge in relations:
             relation, evidence = edge['relation'], edge['evidence']
@@ -45,6 +73,8 @@ async def textbook_graph(user: User = Depends(admin)):
             statement = edge['source']['name'] + relation['kind'] + (relation.get('object_qualifier') or '') + edge['target']['name']
             location = evidence['location']
             review = reviews.get(evidence['chunk_id'], {})
+            if not isinstance(review, dict):
+                review = {}
             fingerprint = hashlib.sha256(json.dumps({key: evidence[key] for key in ('text', 'source_title', 'location')},
                                                      ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()
             verified = review.get('content_sha256') == fingerprint and (
@@ -55,7 +85,8 @@ async def textbook_graph(user: User = Depends(admin)):
             published.append({**edge, 'relation': {**relation, 'statement': statement},
                               'evidence': {**evidence, 'verified_location': verified_location}})
         return {'relations': published, 'limit_reached': len(relations) == 500}
-    except (httpx.HTTPError, OSError, ValueError, KeyError, TypeError):
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+        logger.warning('Invalid textbook graph data: %s', type(exc).__name__)
         raise HTTPException(503, '教材图谱服务暂时不可用，请稍后重试') from None
 
 def find(data, collection, eid):

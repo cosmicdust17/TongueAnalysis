@@ -4,7 +4,8 @@ param(
     [int]$Limit = 12,
     [string]$ReviewWorkbook,
     [string]$ReviewFile,
-    [int]$Port = 8011
+    [int]$Port = 8011,
+    [switch]$GraphOnly
 )
 $ErrorActionPreference = 'Stop'
 $project = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -25,7 +26,13 @@ try {
             $env:HF_HUB_DISABLE_PROGRESS_BARS = '1'
             & (Join-Path $project 'research\multimodal\.venv\Scripts\python.exe') -m research.retrieval.extract_batch --limit $Limit
         }
-        'Serve' { & $python -m research.retrieval.serve --port $Port }
+        'Serve' {
+            if ($GraphOnly) {
+                & $python -m research.retrieval.serve --port $Port --graph-only
+            } else {
+                & $python -m research.retrieval.serve --port $Port
+            }
+        }
         'Verify' { & $python -m research.retrieval.acceptance http --base-url "http://127.0.0.1:$Port" }
         'TestPublication' { & $python -m research.retrieval.acceptance test-graph }
         'Publish' {

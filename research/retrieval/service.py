@@ -21,13 +21,18 @@ class RetrieveRequest(BaseModel):
         return self
 
 
-def create_app(index=None, models=None, store=None):
+def create_app(index=None, models=None, store=None, *, graph_only=False):
     injected = index is not None
+    owns_store = store is None
 
     @asynccontextmanager
     async def lifespan(app):
         nonlocal index, models, store
-        if not injected:
+        if graph_only:
+            if store is None:
+                from .neo import NeoStore
+                store = NeoStore()
+        elif not injected:
             models = Models()
             models.load_reranker()
             backend = os.getenv('RETRIEVAL_BACKEND', 'neo4j')
@@ -40,7 +45,7 @@ def create_app(index=None, models=None, store=None):
             else:
                 raise ValueError('Unsupported RETRIEVAL_BACKEND')
         yield
-        if store and not injected:
+        if store and owns_store:
             store.close()
 
     app = FastAPI(title='Local textbook retrieval', lifespan=lifespan)
@@ -57,10 +62,14 @@ def create_app(index=None, models=None, store=None):
 
     @app.get('/health')
     def health():
+        if graph_only:
+            return {'status': 'ok', 'mode': 'graph-only'}
         return {'status': 'ok', 'index_id': index.manifest['index_id']}
 
     @app.post('/v1/retrieve')
     def search(body: RetrieveRequest):
+        if graph_only:
+            raise HTTPException(503, 'Vector retrieval is disabled in graph-only mode')
         return retrieve(index, models, body.symptoms, body.tongue_features, body.candidate_count, body.top_k)
 
     @app.get('/v1/graph')

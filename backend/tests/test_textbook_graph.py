@@ -9,6 +9,7 @@ from app.core.config import settings
 def test_textbook_graph_publication_states_and_citation(client, tokens, tmp_path, monkeypatch):
     config = settings()
     monkeypatch.setattr(config, 'retrieval_graph_base_url', 'http://graph.test')
+    monkeypatch.setattr(config, 'retrieval_timeout_seconds', 30)
     review_file = tmp_path / 'verified.json'
     monkeypatch.setattr(config, 'retrieval_review_file', str(review_file))
     evidence = {'chunk_id': 'reference', 'text': '外感病见之，多属表证', 'source_title': '中医诊断学',
@@ -22,9 +23,13 @@ def test_textbook_graph_publication_states_and_citation(client, tokens, tmp_path
     edge = {'source': {'name':'淡红舌'}, 'target': {'name':'表证'}, 'relation':relation, 'evidence':evidence}
     rows = [edge, {**edge, 'relation': {**relation, 'approved': False}}, {**edge, 'evidence': {**evidence, 'is_demo': True}}]
     status = 200
+    upstream_error = None
     factory = httpx.AsyncClient
     def transport(request):
         assert request.url.host == 'graph.test'
+        assert request.extensions['timeout']['read'] == 8
+        if upstream_error:
+            raise upstream_error('upstream test failure', request=request)
         return httpx.Response(status, json={'relations':rows})
     monkeypatch.setattr('app.api.knowledge.httpx.AsyncClient', lambda **kw: factory(transport=httpx.MockTransport(transport), **kw))
     url = '/api/v1/knowledge/textbook-graph'
@@ -35,7 +40,16 @@ def test_textbook_graph_publication_states_and_citation(client, tokens, tmp_path
     assert only['relation']['statement'] == '淡红舌可见于部分表证'
     assert only['relation']['condition'] == '外感病见之'
     assert only['evidence']['verified_location'] == {'printed_page':44}
+    review_file.write_text('[]', encoding='utf-8')
+    unverified = client.get(url, headers=tokens['knowledge_admin'])
+    assert unverified.status_code == 200
+    assert unverified.json()['relations'][0]['evidence']['verified_location'] == {}
     rows.clear()
     assert client.get(url, headers=tokens['knowledge_admin']).json()['relations'] == []
     status = 503
     assert client.get(url, headers=tokens['knowledge_admin']).status_code == 503
+    upstream_error = httpx.ConnectError
+    unavailable = client.get(url, headers=tokens['knowledge_admin'])
+    assert unavailable.status_code == 503 and '无法连接' in unavailable.json()['detail']
+    upstream_error = httpx.ReadTimeout
+    assert client.get(url, headers=tokens['knowledge_admin']).status_code == 504

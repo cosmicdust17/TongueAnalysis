@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
-import { onShow } from "@dcloudio/uni-app";
+import { ref } from "vue";
+import { onReady, onShow } from "@dcloudio/uni-app";
 import { requireAuth } from "@/stores/auth";
 import PageHero from "@/components/PageHero.vue";
 import TextbookGraph from "@/components/TextbookGraph.vue";
 import RoleNav from "@/components/RoleNav.vue";
 
 const textbook = ref<InstanceType<typeof TextbookGraph> | null>(null);
-onShow(async () => {
+let ready = false;
+function loadGraph() {
   if (!requireAuth("knowledge_admin")) return;
-  await nextTick();
   void textbook.value?.load();
+}
+onReady(() => {
+  ready = true;
+  loadGraph();
+});
+onShow(() => {
+  if (ready) loadGraph();
 });
 function go(path: string) {
   uni.navigateTo({ url: "/subpackages/knowledge-admin/" + path });

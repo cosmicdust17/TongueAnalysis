@@ -3,6 +3,10 @@ import { computed, ref } from "vue";
 import { api } from "@/utils/request";
 import type { Graph } from "@/types";
 import KnowledgeGraph from "@/components/KnowledgeGraph.vue";
+// #ifdef H5
+import KnowledgeGraphG6 from "@/components/KnowledgeGraphG6.vue";
+const useG6 = ref(true);
+// #endif
 
 type TextbookEdge = {
   source: { entity_id: string; name: string };
@@ -121,7 +125,13 @@ function locationText(edge: TextbookEdge) {
       <picker :range="data.nodes" range-key="name" @change="selectNode(data.nodes[Number($event.detail.value)].id)">
         <view class="focus-picker">当前实体：{{ focus?.name }} · 选择实体 ⌄</view>
       </picker>
+      <!-- #ifdef H5 -->
+      <KnowledgeGraphG6 v-if="useG6" :data="data" :selected="selected" :neighbor-page="neighborPage" @select="selectNode" @relation="selectRelation" @unavailable="useG6 = false" />
+      <KnowledgeGraph v-else :data="data" :selected="selected" :neighbor-page="neighborPage" @select="selectNode" @relation="selectRelation" />
+      <!-- #endif -->
+      <!-- #ifndef H5 -->
       <KnowledgeGraph :data="data" :selected="selected" :neighbor-page="neighborPage" @select="selectNode" @relation="selectRelation" />
+      <!-- #endif -->
       <view class="muted tiny center">拖动平移，双指或＋/−缩放，点击连线查看出处。</view>
       <view v-if="neighborPages > 1" class="row between spaced">
         <button class="outline button-small" :disabled="neighborPage === 0" @tap="neighborPage--">上一组</button>

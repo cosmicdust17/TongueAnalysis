@@ -1,5 +1,14 @@
 # 真实 Neo4j 与教材三元组交付
 
+本地管理员页通过 `RETRIEVAL_GRAPH_BASE_URL=http://127.0.0.1:8014` 读取教材关系。重启 Windows 或 Docker 后，先启动 Docker Desktop，再从项目目录运行以下命令。`-GraphOnly` 直接使用 Neo4j，无需加载向量检索模型。
+
+```powershell
+.\research\retrieval\real.ps1 -Action Neo4j
+.\research\retrieval\real.ps1 -Action Serve -Port 8014 -GraphOnly
+```
+
+另开终端请求 `http://127.0.0.1:8014/health` 和 `http://127.0.0.1:8014/v1/graph`，分别核对服务状态和已发布关系。旧的 `Serve -Port 8014` 命令仍可同时加载向量检索与图谱，但启动时间更长。
+
 ## 本轮人工审核批量发布
 
 本批在真实 Neo4j 新增 24 条教材关系。首次发布前有 0 条真实教材关系，复跑新增 0 条，24 条关系的 Neo4j ID、属性和出处一致。独立的合成验收关系仍隔离。20 条按修订版发布，4 条沿用原案。2 条重复关系已合并，2 条排除，2 条待拆分复审，所含 8 条草案随父条目暂缓发布。
