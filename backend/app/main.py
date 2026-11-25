@@ -10,7 +10,7 @@ from neo4j.exceptions import Neo4jError, DriverError
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.repositories.graph_repository import graph_repository, GraphConflict
-from app.api import auth, users, uploads, analyses, reports, knowledge, operations
+from app.api import auth, users, uploads, analyses, reports, knowledge, operations, health_trends
 from app.services.analysis_service import recover_interrupted
 from app.tasks.runner import run_worker
 
@@ -69,5 +69,5 @@ def health():
     return {'status': 'ok', 'model_provider': settings().model_provider, 'graph_provider': settings().graph_provider,
             'knowledge_retrieval_enabled': settings().knowledge_retrieval_enabled}
 
-for router in (auth.router, users.router, uploads.router, analyses.router, reports.router, knowledge.router, operations.router):
+for router in (auth.router, users.router, uploads.router, analyses.router, reports.router, knowledge.router, operations.router, health_trends.router):
     app.include_router(router, prefix='/api/v1')

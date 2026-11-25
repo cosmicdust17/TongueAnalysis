@@ -1,6 +1,7 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from uuid import uuid4
-from sqlalchemy import String, Text, Integer, Boolean, DateTime, JSON, ForeignKey, Index
+from sqlalchemy import String, Text, Integer, Boolean, Date, DateTime, JSON, ForeignKey, Index, UniqueConstraint, CheckConstraint
+from sqlalchemy.dialects.mysql import DATETIME as MySQLDateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
@@ -40,12 +41,13 @@ class Analysis(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
     image_id: Mapped[str] = mapped_column(ForeignKey('stored_files.id'))
     symptoms: Mapped[str] = mapped_column(Text)
+    confirmed_symptoms: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     duration: Mapped[str] = mapped_column(String(40))
     status: Mapped[str] = mapped_column(String(24), default='queued', index=True)
     progress: Mapped[int] = mapped_column(Integer, default=0)
     error: Mapped[str] = mapped_column(Text, default='')
     result: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+    created_at: Mapped[datetime] = mapped_column(DateTime().with_variant(MySQLDateTime(fsp=6), 'mysql'), default=now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=now, onupdate=now)
 
 class Report(Base):
@@ -92,4 +94,29 @@ class Alert(Base):
     resolved: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
+class SymptomTracking(Base):
+    __tablename__ = 'symptom_trackings'
+    __table_args__ = (UniqueConstraint('user_id', 'symptom_key', name='uq_tracking_user_symptom'),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    symptom_key: Mapped[str] = mapped_column(String(64))
+    symptom_name: Mapped[str] = mapped_column(String(80))
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+class SymptomSuggestionDismissal(Base):
+    __tablename__ = 'symptom_suggestion_dismissals'
+
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    symptom_key: Mapped[str] = mapped_column(String(64), primary_key=True)
+
+class SymptomCheckin(Base):
+    __tablename__ = 'symptom_checkins'
+    __table_args__ = (CheckConstraint('level BETWEEN 0 AND 3', name='ck_symptom_checkin_level'),)
+
+    tracking_id: Mapped[str] = mapped_column(ForeignKey('symptom_trackings.id'), primary_key=True)
+    record_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    level: Mapped[int] = mapped_column(Integer)
+
 Index('ix_reports_user_created', Report.user_id, Report.created_at)
+Index('ix_analyses_user_status_created', Analysis.user_id, Analysis.status, Analysis.created_at)

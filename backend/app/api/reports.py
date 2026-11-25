@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from collections import Counter
+from datetime import date, timedelta
 from pathlib import Path
 from time import perf_counter
 from sqlalchemy import select, func
@@ -7,7 +9,7 @@ from app.core.database import get_db
 from app.core.security import require_role
 from app.models import User, Report, Evidence, Analysis, StoredFile
 from app.services.annotations import annotation_snapshot
-from app.services.common import iso, audit
+from app.services.common import iso, audit, local_date, utc_day_start
 from app.services.export_service import render_report
 from app.services.report_presentation import compose, merge_saved_presentation, PRESENTATION_VERSION
 
@@ -54,14 +56,35 @@ def ensure_presentation(item, analysis, db):
         item.content = {**item.content, 'presentation': compose(raw, analysis.symptoms, analysis.duration, item.user_id, profile, item.created_at, sources)}
         db.commit()
 
+def completed_photos_in_range(stmt, user_id, first, last):
+    return stmt.join(StoredFile, StoredFile.id == Analysis.image_id).where(
+        Analysis.user_id == user_id, Analysis.status == 'completed',
+        StoredFile.owner_id == user_id, StoredFile.purpose == 'image',
+        StoredFile.content_type.like('image/%'),
+        StoredFile.created_at >= utc_day_start(first), StoredFile.created_at < utc_day_start(last),
+    )
+
 @router.get('')
-def history(q: str = Query(default='', max_length=100), page: int = Query(default=1, ge=1), page_size: int = Query(default=20, ge=1, le=100), user: User = Depends(user_only), db: Session = Depends(get_db)):
+def history(q: str = Query(default='', max_length=100), page: int = Query(default=1, ge=1), page_size: int = Query(default=20, ge=1, le=100), day: date | None = Query(default=None, alias='date', ge=date(1000, 1, 2), le=date(9999, 12, 30)), user: User = Depends(user_only), db: Session = Depends(get_db)):
     stmt = select(Report).join(Analysis, Report.analysis_id == Analysis.id).where(Report.user_id == user.id)
+    if day is not None:
+        stmt = completed_photos_in_range(stmt, user.id, day, day + timedelta(days=1))
     if q:
         stmt = stmt.where(Report.title.contains(q, autoescape=True) | Analysis.symptoms.contains(q, autoescape=True))
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
-    items = db.scalars(stmt.order_by(Report.created_at.desc()).offset((page-1)*page_size).limit(page_size)).all()
+    items = db.scalars(stmt.order_by(Report.created_at.desc(), Report.id.desc()).offset((page-1)*page_size).limit(page_size)).all()
     return {'items': [detail(x, db) for x in items], 'total': total, 'page': page, 'page_size': page_size}
+
+@router.get('/calendar')
+def calendar(month: str = Query(pattern=r'^[0-9]{4}-(0[1-9]|1[0-2])$'), user: User = Depends(user_only), db: Session = Depends(get_db)):
+    if not '1000-02' <= month <= '9999-11':
+        raise HTTPException(422, '月份超出可查询范围')
+    first = date.fromisoformat(month + '-01')
+    last = (first.replace(day=28) + timedelta(days=4)).replace(day=1)
+    stmt = select(StoredFile.created_at).select_from(Report).join(Analysis, Report.analysis_id == Analysis.id).where(Report.user_id == user.id)
+    uploads = db.scalars(completed_photos_in_range(stmt, user.id, first, last))
+    counts = Counter(local_date(timestamp).isoformat() for timestamp in uploads)
+    return {'month': month, 'dates': sorted(counts), 'counts': dict(sorted(counts.items()))}
 
 @router.get('/{rid}')
 def get(rid: str, user: User = Depends(user_only), db: Session = Depends(get_db)):

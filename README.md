@@ -12,7 +12,7 @@ uni-app + Vue 3 + TypeScript + Pinia 小程序，FastAPI + SQLAlchemy + Alembic 
 2. `sql/01_schema.sql`：创建业务表与索引，仅用于尚未建表的数据库。
 3. 如需独立应用账号，修改 `sql/02_local_user.sql.example` 的密码后执行。将相同密码写入 `.env` 的 `DATABASE_URL`。
 
-也可以只执行第1个 SQL，随后使用 `alembic upgrade head` 创建表。**SQL建表和Alembic建表二选一**：若已执行第2个 SQL，后续执行 `alembic stamp head` 标记版本，不再对同一批表执行首次升级。
+空库可只执行第 1 个 SQL，然后用 `alembic upgrade head` 建表。若已执行第 2 个 SQL，使用 `scripts/init_mysql.py` 核对旧表、标记 `0001` 并执行后续增量迁移。
 
 | 表 | 内容 |
 |---|---|
@@ -88,9 +88,8 @@ python scripts/configure.py
 如果已创建 `.env`，直接编辑它。将 `DATABASE_URL`、`NEO4J_URI`、`NEO4J_PASSWORD` 配置为已有服务。数据库密码含 `@`、`:`、`/`、`#` 等字符时，需要在连接URL中进行百分号编码；自动生成的密码不含这些字符。
 
 ```powershell
+.\.venv\Scripts\python.exe scripts\init_mysql.py
 cd backend
-# 已执行01_schema.sql时，此处改为 alembic stamp head
-..\.venv\Scripts\python.exe -m alembic upgrade head
 ..\.venv\Scripts\python.exe ..\knowledge\scripts\init_graph.py
 ..\.venv\Scripts\python.exe -m app.cli seed-graph
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1

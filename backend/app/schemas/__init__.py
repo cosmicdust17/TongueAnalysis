@@ -1,5 +1,6 @@
-from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from typing import Annotated, Literal
+import unicodedata
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator
 
 class Input(BaseModel):
     model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
@@ -25,10 +26,21 @@ class PasswordIn(Input):
     old_password: str = Field(max_length=128)
     new_password: str = Field(min_length=10, max_length=128)
 
+def normalize_symptom(value):
+    if not isinstance(value, str):
+        return value
+    name = ' '.join(unicodedata.normalize('NFKC', value).split())
+    if any(unicodedata.category(char).startswith('C') for char in name):
+        raise ValueError('症状名称含有无效字符')
+    return name
+
+SymptomName = Annotated[str, Field(min_length=1, max_length=80), BeforeValidator(normalize_symptom)]
+
 class AnalysisIn(Input):
     model_config = ConfigDict(str_strip_whitespace=False)
     image_id: str = Field(min_length=1, max_length=36)
     symptoms: str = Field(min_length=1, max_length=200)
+    confirmed_symptoms: list[SymptomName] = Field(default_factory=list, max_length=20)
     duration: Literal['近三天', '近一周', '近一个月', '一个月以上'] = '近一周'
 
     @field_validator('symptoms')
@@ -37,6 +49,12 @@ class AnalysisIn(Input):
         if not value.strip():
             raise ValueError('Symptoms cannot be blank')
         return value
+
+class SymptomIn(Input):
+    symptom_name: SymptomName
+
+class SymptomCheckinIn(Input):
+    level: int = Field(strict=True, ge=0, le=3)
 
 class EntityIn(Input):
     name: str = Field(min_length=1, max_length=100)

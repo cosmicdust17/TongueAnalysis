@@ -17,10 +17,17 @@
 | /analyses | POST | 普通用户创建排队任务，返回202 |
 | /analyses/{id} | GET | 本人任务进度 |
 | /analyses/{id}/retry | POST | 本人失败任务重试 |
-| /reports | GET | 本人报告历史，q/page/page_size |
+| /reports | GET | 本人报告历史，date 指定舌照上传日，支持 q/page/page_size |
+| /reports/calendar | GET | 本人按舌照上传日统计的已完成报告日期和份数，必填 month |
 | /reports/{id} | GET | 本人报告 |
 | /reports/{id}/evidence | GET | 本人报告的生成时证据快照 |
 | /reports/{id}/pdf | GET | 本人中文PDF |
+| /health-trends/trackings | GET / POST | 查询追踪项，按症状名称开启或恢复 |
+| /health-trends/trackings/{id}/stop | PUT | 停止症状追踪 |
+| /health-trends/trackings/{id}/checkins/today | PUT | 保存今日自评 |
+| /health-trends/trackings/{id}/trend | GET | 查询症状自评趋势，start_date/end_date |
+| /health-trends/analyses/{id}/suggestion | GET | 查询分析完成后的单项追踪建议 |
+| /health-trends/analyses/{id}/dismissal | PUT | 明确拒绝该症状的自动推荐 |
 | /knowledge/overview | GET | 知识管理员统计 |
 | /knowledge/entities | GET / POST | 查询/新建实体 |
 | /knowledge/entities/{id} | PUT / DELETE | 修改/删除实体 |
@@ -44,3 +51,7 @@
 分析任务状态为queued、running、completed、failed。结果与证据快照在同一MySQL事务提交，每个分析任务至多一份报告。文件下载不使用公开静态目录，不将JWT放在URL中。
 
 数据库时间统一存UTC，接口输出显式UTC偏移，前端显示北京时间。当日分析与日志日期筛选均使用Asia/Shanghai的日期边界。
+
+真实请求和响应示例见[健康趋势与分析日历接口交接](health-trends.md)。
+
+月历完整接口见[分析记录月历接口交接](report-calendar.md)。

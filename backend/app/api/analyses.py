@@ -15,6 +15,12 @@ def view(item, db):
     return {'id': item.id, 'status': item.status, 'progress': item.progress, 'error': item.error,
             'report_id': report_id, 'created_at': iso(item.created_at), 'updated_at': iso(item.updated_at)}
 
+def owned_analysis(db, user_id, analysis_id):
+    item = db.get(Analysis, analysis_id)
+    if item is None or item.user_id != user_id:
+        raise HTTPException(404, '分析任务不存在')
+    return item
+
 @router.post('', status_code=202)
 def create(body: AnalysisIn, user: User = Depends(user_only), db: Session = Depends(get_db)):
     db.scalar(select(User).where(User.id == user.id).with_for_update())
@@ -32,16 +38,11 @@ def create(body: AnalysisIn, user: User = Depends(user_only), db: Session = Depe
 
 @router.get('/{aid}')
 def get(aid: str, user: User = Depends(user_only), db: Session = Depends(get_db)):
-    item = db.get(Analysis, aid)
-    if not item or item.user_id != user.id:
-        raise HTTPException(404, '分析任务不存在')
-    return view(item, db)
+    return view(owned_analysis(db, user.id, aid), db)
 
 @router.post('/{aid}/retry', status_code=202)
 def retry(aid: str, user: User = Depends(user_only), db: Session = Depends(get_db)):
-    item = db.get(Analysis, aid)
-    if not item or item.user_id != user.id:
-        raise HTTPException(404, '分析任务不存在')
+    item = owned_analysis(db, user.id, aid)
     if item.status != 'failed':
         raise HTTPException(409, '只有失败的任务可以重试')
     if db.scalar(select(Analysis.id).where(Analysis.user_id == user.id, Analysis.status.in_(['queued', 'running'])).with_for_update()):

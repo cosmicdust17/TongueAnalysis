@@ -29,13 +29,14 @@ cd backend
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
 ```
 
-`init_mysql.py` 先核对 `sql/01_schema.sql` 和 ORM 的建表定义，再检查真实 MySQL：
+`init_mysql.py` 先核对 `sql/01_schema.sql` 和 Alembic `0001` 的建表定义，再检查真实 MySQL。
 
-- 空库才执行 `alembic upgrade head`。
-- 已有完整表且字段、类型、可空性、主键、唯一约束、索引、外键一致，才执行 `alembic stamp head`。
-- 已有版本则保持版本并检查；部分建表、未知版本或结构不符时停止，不删除或覆盖数据。
+- 空库通过 `alembic upgrade head` 建表。
+- 已用旧 SQL 完整建表且无版本记录时，核对列和约束后标记 `0001`，再执行增量迁移到 `0002`。
+- 已标记 `0001` 的库核对后升级到 `0002`。工具最后核对升级后的 ORM 结构。
+- 部分建表、未知版本或结构不符时停止。
 
-本次实库已有业务表，结构一致，实际执行的是 `stamp head`，版本为 `0001`，未重复建表。
+2026-11-18 的实库初始化只标记了当时的版本 `0001`。健康趋势迁移与接口见[健康趋势交接](health-trends.md)。
 
 ## 持久化与验证
 

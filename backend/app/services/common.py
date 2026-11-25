@@ -1,5 +1,13 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from app.models import AuditLog
+
+LOCAL_OFFSET = timedelta(hours=8)
+
+def local_date(utc_timestamp: datetime) -> date:
+    return (utc_timestamp + LOCAL_OFFSET).date()
+
+def utc_day_start(day: date) -> datetime:
+    return datetime.combine(day, time.min) - LOCAL_OFFSET
 
 def iso(value):
     # DB timestamps are UTC; emit explicit offset for the mini-program.
