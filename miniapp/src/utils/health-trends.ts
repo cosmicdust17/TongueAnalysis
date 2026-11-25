@@ -21,9 +21,16 @@ export interface Trackings {
   active_count: number;
   items: Tracking[];
 }
+export interface ReportMention {
+  date: string;
+  mention_count: number;
+  report_id: string | null;
+}
 export interface Trend {
   tracking_id: string;
   symptom_name: string;
+  started_date?: string | null;
+  report_history?: ReportMention[];
   items: Checkin[];
 }
 export interface Suggestion {

@@ -184,19 +184,13 @@ onUnmounted(() => { disposed = true; trendVersion++; });
           <view class="card-title">症状趋势</view>
           <button v-if="pausedItem" class="text-action" @tap="showPaused()">返回追踪趋势</button>
         </view>
-        <view v-if="chartItems.length" class="trend-legend">
-          <view v-for="(item, index) in chartItems" :key="item.id" class="legend-item">
-            <view class="legend-mark" :class="{ sage: index === 1 }" />
-            <text>{{ item.symptom_name }}{{ pausedItem ? "（已暂停）" : "" }}</text>
-          </view>
-        </view>
         <view v-if="trendBusy" class="loading">正在读取趋势…</view>
         <view v-else-if="trendError" class="error spaced">
           {{ trendError }} <text class="link" @tap="loadTrend">重试</text>
         </view>
-        <TrendLine v-else-if="totalCheckins.length" :start="startDate" :end="board.date" :series="series" />
+        <TrendLine v-else-if="series.length" :start="startDate" :end="board.date" :series="series" :paused="!!pausedItem" />
         <view v-else class="empty">
-          {{ chartItems.length ? "这段时间暂无自评记录" : "可在下方或分析完成页开启症状追踪。" }}
+          可在下方或分析完成页开启症状追踪。
         </view>
       </view>
 
@@ -293,11 +287,6 @@ onUnmounted(() => { disposed = true; trendVersion++; });
 .range-button::after, .report-link::after, .text-action::after { border: 0; }
 .range-button.selected { color: #fff; background: var(--primary); font-weight: 600; }
 .trend-panel, .overview-panel { padding: 22rpx 24rpx 26rpx; }
-.trend-legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6rpx 22rpx; margin: 10rpx 0 0; }
-.legend-item { display: flex; align-items: center; gap: 10rpx; font-size: var(--font-caption); overflow-wrap: anywhere; }
-.legend-mark { position: relative; flex: none; width: 30rpx; height: 2rpx; background: var(--trend-olive); color: var(--trend-olive); }
-.legend-mark.sage { background: var(--trend-sage); color: var(--trend-sage); }
-.legend-mark::after { content: ""; position: absolute; left: 9rpx; top: -5rpx; width: 8rpx; height: 8rpx; border: 2rpx solid currentColor; border-radius: 50%; background: var(--surface); }
 .overview-title { gap: 0; }
 .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; gap: 18rpx; margin-top: 18rpx; }
 .metric { width: auto; display: flex; flex-direction: column; align-items: center; gap: 5rpx; padding: 20rpx 6rpx 16rpx; border-radius: 24rpx; text-align: center; background: var(--soft); }

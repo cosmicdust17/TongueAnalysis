@@ -103,6 +103,7 @@ class SymptomTracking(Base):
     symptom_key: Mapped[str] = mapped_column(String(64))
     symptom_name: Mapped[str] = mapped_column(String(80))
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    started_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
 class SymptomSuggestionDismissal(Base):
     __tablename__ = 'symptom_suggestion_dismissals'

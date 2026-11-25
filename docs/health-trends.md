@@ -17,7 +17,7 @@
 .\.venv\Scripts\python.exe -m alembic -c backend/alembic.ini current
 ```
 
-版本目标为 `0002`。已确认有 Alembic 版本记录且结构正确时，也可直接执行：
+版本目标为 `0003`。`0002` 数据库沿用已有数据，使用 Alembic 增量增加首次开启追踪日期。已有 Alembic 版本记录的数据库执行：
 
 ```powershell
 .\.venv\Scripts\python.exe -m alembic -c backend/alembic.ini upgrade head
@@ -138,17 +138,25 @@ HTTP 状态为 `409`。此时对同一已启用症状重复调用仍返回 `200`
 
 停用项返回 `409 {"detail":{"code":"tracking_paused","message":"请先恢复追踪再填写自评"}}`。不存在或非本人项返回 `404`。字符串 `"0"`、布尔值、空值和范围以外的数字均返回 `422`。
 
-**`GET /api/v1/health-trends/trackings/{tracking_id}/trend?start_date=2026-11-22&end_date=2026-11-25`**。两个参数都必填，格式 `YYYY-MM-DD`，范围含起止日。只返回实际保存的日期，按日期升序。
+**`GET /api/v1/health-trends/trackings/{tracking_id}/trend?start_date=2026-11-22&end_date=2026-11-25`**。两个参数都必填，格式 `YYYY-MM-DD`，范围含起止日。数据按北京时间的自然日升序返回。
 
 ```json
 {
   "tracking_id":"tracking-id",
   "symptom_name":"口干",
+  "started_date":"2026-11-24",
+  "report_history":[
+    {"date":"2026-11-22","mention_count":2,"report_id":"latest-matching-report-id"},
+    {"date":"2026-11-23","mention_count":0,"report_id":null}
+  ],
   "items":[{"date":"2026-11-24","level":0,"level_name":"没有"}]
 }
 ```
 
-没有记录时 `items: []` 且返回 `200`。开始晚于结束返回 `422 {"detail":"开始日期不能晚于结束日期"}`。不存在或非本人项返回 `404`。
+- 开启前根据报告生成日统计。同一份已完成报告的原始症状自述提到症状多次只计一份，`report_id` 指向该日最新的匹配报告。有报告但均未提及时计为 `0`，当天无报告则省略该日。
+- `items` 是开启当天及以后的已填自评，包含有效等级 `0`。未填写的日期省略。恢复追踪沿用首次开启日期。
+- 旧追踪的首次开启日期未保存，返回 `started_date: null`、`report_history: []` 及现存自评。
+- 开始晚于结束返回 `422 {"detail":"开始日期不能晚于结束日期"}`。不存在或非本人项返回 `404`。
 
 ### 2.5 分析记录日历
 
@@ -176,8 +184,8 @@ HTTP 状态为 `409`。此时对同一已启用症状重复调用仍返回 `200`
 ### 健康趋势页
 
 1. 进入页面取 `GET /api/v1/health-trends/trackings`，读取 `date`、`active_count`、`max_active` 和追踪项。用 `today_level === null` 判断未填写，等级 `0` 显示「没有」。
-2. 选中某项及日期范围时取 `GET /api/v1/health-trends/trackings/{tracking_id}/trend`。按 `items[n].date` 填折线数据，缺失天置空。单条记录也展示数据点。
-3. 点击某档时调用今日自评 PUT，用响应的 `date` 和 `level` 更新当天点或刷新数据。暂停历史仍可展示，恢复使用原名称调用开启接口。日期和值使用后端返回值，便于处理午夜切换。
+2. 选中某项及日期范围时取 `GET /api/v1/health-trends/trackings/{tracking_id}/trend`。`report_history` 和 `items` 共用日期轴，在 `started_date` 处分段，缺失日期留空。
+3. 点击带 `report_id` 的历史数据点打开原有报告详情。每日自评仍在舌象分析首页填写。暂停历史仍可展示，恢复使用原名称调用开启接口。
 
 ### 分析记录页日历
 

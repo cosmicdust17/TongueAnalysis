@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import date, datetime
 from threading import Barrier
 
 from sqlalchemy import func, select
@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from app.api import health_trends
 from app.core.database import SessionLocal
 from app.core.security import issue_token
-from app.models import Analysis, Report, StoredFile, SymptomCheckin, SymptomSuggestionDismissal, User
+from app.models import Analysis, Report, StoredFile, SymptomCheckin, SymptomSuggestionDismissal, SymptomTracking, User
 from app.services.report_presentation import PRESENTATION_VERSION
 from app.services.analysis_service import process_one
 from test_workflows import image_bytes
@@ -143,6 +143,64 @@ def test_daily_checkins_and_pause_resume(client, tokens, monkeypatch):
     second = client.put(today, headers=headers, json={'level': 3}).json()
     assert second == {'date': '2026-11-26', 'level': 3, 'level_name': '很明显'}
     assert client.get(url + '/trend?start_date=2026-11-24&end_date=2026-11-26', headers=headers).json()['items'] == [changed, second]
+
+
+def test_trend_uses_report_mentions_only_before_first_tracking_day(client, tokens, monkeypatch):
+    headers = tokens['user']
+    other = other_user()
+    image = upload(client, headers)
+    other_image = upload(client, other)
+    monkeypatch.setattr(health_trends, 'now', lambda: datetime(2026, 11, 24, 16))
+    item = start(client, headers, '口干').json()
+    url = f"{TRACKINGS}/{item['id']}"
+    trend_url = url + '/trend?start_date=2026-11-21&end_date=2026-11-26'
+    assert client.put(url + '/checkins/today', headers=headers, json={'level': 0}).status_code == 200
+
+    with SessionLocal() as db:
+        owner = db.get(StoredFile, image).owner_id
+
+        def archive(image_id, user_id, utc, symptoms, status='completed'):
+            analysis = Analysis(user_id=user_id, image_id=image_id, symptoms=symptoms,
+                                duration='近一周', status=status)
+            db.add(analysis)
+            db.flush()
+            report = Report(user_id=user_id, analysis_id=analysis.id, content={}, created_at=utc)
+            db.add(report)
+            db.flush()
+            return report.id
+
+        archive(image, owner, datetime(2026, 11, 20, 16), '口干，口干')
+        newest = archive(image, owner, datetime(2026, 11, 21, 7), '最近口干')
+        archive(image, owner, datetime(2026, 11, 21, 8), '乏力')
+        archive(image, owner, datetime(2026, 11, 21, 16), '乏力')
+        archive(other_image, db.get(StoredFile, other_image).owner_id, datetime(2026, 11, 22, 5), '口干')
+        archive(image, owner, datetime(2026, 11, 23, 4), '口干', status='failed')
+        last_before = archive(image, owner, datetime(2026, 11, 24, 15, 59, 59), '口干')
+        archive(image, owner, datetime(2026, 11, 24, 16), '口干')
+        archive(image, owner, datetime(2026, 11, 25, 16), '口干')
+        db.commit()
+
+    result = client.get(trend_url, headers=headers).json()
+    assert result['started_date'] == '2026-11-25'
+    assert result['report_history'] == [
+        {'date': '2026-11-21', 'mention_count': 2, 'report_id': newest},
+        {'date': '2026-11-22', 'mention_count': 0, 'report_id': None},
+        {'date': '2026-11-24', 'mention_count': 1, 'report_id': last_before},
+    ]
+    assert result['items'] == [{'date': '2026-11-25', 'level': 0, 'level_name': '没有'}]
+    assert client.put(url + '/stop', headers=headers).status_code == 200
+    monkeypatch.setattr(health_trends, 'now', lambda: datetime(2026, 11, 25, 16))
+    assert start(client, headers, '口干').json()['id'] == item['id']
+    assert client.get(trend_url, headers=headers).json() == result
+
+    with SessionLocal() as db:
+        tracking = db.get(SymptomTracking, item['id'])
+        assert tracking.started_date == date(2026, 11, 25)
+        tracking.started_date = None
+        db.commit()
+    legacy = client.get(trend_url, headers=headers).json()
+    assert legacy['started_date'] is None and legacy['report_history'] == []
+    assert legacy['items'] == result['items']
 
 
 def test_parallel_start_respects_limit_and_reuses_id(client, tokens):

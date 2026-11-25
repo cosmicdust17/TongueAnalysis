@@ -1,16 +1,17 @@
-from datetime import date
+from datetime import date, timedelta
 from hashlib import sha256
+from unicodedata import normalize
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, func, select, update
 from sqlalchemy.orm import Session
 
 from app.api.analyses import owned_analysis
 from app.core.database import get_db
 from app.core.security import require_role
-from app.models import Analysis, SymptomCheckin, SymptomSuggestionDismissal, SymptomTracking, User, now
+from app.models import Analysis, Report, SymptomCheckin, SymptomSuggestionDismissal, SymptomTracking, User, now
 from app.schemas import SymptomCheckinIn, SymptomIn
-from app.services.common import local_date
+from app.services.common import local_date, utc_day_start
 
 router = APIRouter(prefix='/health-trends', tags=['健康趋势'])
 user_only = require_role('user')
@@ -90,7 +91,8 @@ def start(body: SymptomIn, user: User = Depends(user_only), db: Session = Depend
     if active_count >= MAX_ACTIVE:
         raise HTTPException(409, {'code': 'tracking_limit_reached', 'message': '最多同时追踪两项症状', 'max_active': MAX_ACTIVE})
     if item is None:
-        item = SymptomTracking(user_id=user_id, symptom_key=key, symptom_name=body.symptom_name)
+        item = SymptomTracking(user_id=user_id, symptom_key=key, symptom_name=body.symptom_name,
+                               started_date=local_date(now()))
         db.add(item)
     else:
         item.active = True
@@ -156,12 +158,41 @@ def checkin(tracking_id: str, body: SymptomCheckinIn, user: User = Depends(user_
     return checkin_view(item)
 
 
+def report_history(db, tracking, start_date, end_date):
+    if tracking.started_date is None or start_date >= tracking.started_date:
+        return []
+    stop = min(end_date + timedelta(days=1), tracking.started_date)
+    rows = db.execute(select(Report.id, Report.created_at, Analysis.symptoms)
+                      .join(Analysis, Analysis.id == Report.analysis_id)
+                      .where(Report.user_id == tracking.user_id, Analysis.user_id == tracking.user_id,
+                             Analysis.status == 'completed', Report.created_at >= utc_day_start(start_date),
+                             Report.created_at < utc_day_start(stop))
+                      .order_by(Report.created_at.desc(), Report.id.desc()))
+    day_entries = {}
+    symptom = tracking.symptom_name.casefold()
+    for report_id, created_at, symptoms in rows:
+        day = local_date(created_at)
+        entry = day_entries.setdefault(day, {'date': day, 'mention_count': 0, 'report_id': None})
+        text = ' '.join(normalize('NFKC', symptoms).split()).casefold()
+        if symptom in text:
+            entry['mention_count'] += 1
+            if entry['report_id'] is None:
+                entry['report_id'] = report_id
+    return [day_entries[day] for day in sorted(day_entries)]
+
+
 @router.get('/trackings/{tracking_id}/trend')
-def trend(tracking_id: str, start_date: date, end_date: date, user: User = Depends(user_only), db: Session = Depends(get_db)):
+def trend(tracking_id: str,
+          start_date: date = Query(ge=date(1000, 1, 2), le=date(9999, 12, 30)),
+          end_date: date = Query(ge=date(1000, 1, 2), le=date(9999, 12, 30)),
+          user: User = Depends(user_only), db: Session = Depends(get_db)):
     tracking = owned_tracking(db, user.id, tracking_id)
     if start_date > end_date:
         raise HTTPException(422, '开始日期不能晚于结束日期')
+    checkin_start = max(start_date, tracking.started_date) if tracking.started_date else start_date
     rows = db.scalars(select(SymptomCheckin).where(
-        SymptomCheckin.tracking_id == tracking.id, SymptomCheckin.record_date.between(start_date, end_date),
+        SymptomCheckin.tracking_id == tracking.id, SymptomCheckin.record_date.between(checkin_start, end_date),
     ).order_by(SymptomCheckin.record_date))
-    return {'tracking_id': tracking.id, 'symptom_name': tracking.symptom_name, 'items': [checkin_view(item) for item in rows]}
+    return {'tracking_id': tracking.id, 'symptom_name': tracking.symptom_name, 'started_date': tracking.started_date,
+            'report_history': report_history(db, tracking, start_date, end_date),
+            'items': [checkin_view(item) for item in rows]}
