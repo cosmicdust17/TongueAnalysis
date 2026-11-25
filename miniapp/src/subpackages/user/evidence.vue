@@ -131,7 +131,7 @@ function cited(reading?: TextbookReading) {
 .evidence-list {
   padding: 0 22rpx;
   background: var(--surface);
-  border-radius: 24rpx;
+  border-radius: 20rpx;
 }
 .evidence-entry {
   display: flex;
@@ -160,7 +160,7 @@ function cited(reading?: TextbookReading) {
   opacity: 0.72;
 }
 .toggle-label {
-  color: var(--primary);
+  color: var(--deep);
   font-size: var(--font-caption);
   font-weight: 400;
   white-space: nowrap;
@@ -185,6 +185,6 @@ function cited(reading?: TextbookReading) {
 .evidence-source {
   margin-top: 18rpx;
   padding-top: 14rpx;
-  border-top: 1rpx solid #e5e0d3;
+  border-top: 1rpx solid #e8e1cf;
 }
 </style>

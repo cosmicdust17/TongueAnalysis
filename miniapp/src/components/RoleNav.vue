@@ -55,6 +55,7 @@ const tabs = computed(() =>
             icon: "clock",
             url: "/subpackages/user/history",
           },
+          { key: "trends", label: "健康趋势", icon: "trend", url: "/subpackages/user/trends" },
           {
             key: "mine",
             label: "我的",

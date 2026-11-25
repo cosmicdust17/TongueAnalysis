@@ -3,7 +3,7 @@ import { ref, computed, watch, nextTick, getCurrentInstance, onMounted, onUnmoun
 import { download } from '@/utils/request';
 import type { AnnotationSnapshot, DetectionBox } from '@/types';
 import { containRect, labelPositions } from '@/utils/annotations';
-const props = defineProps<{ fileId: string; annotations?: AnnotationSnapshot; compact?: boolean; monochrome?: boolean }>();
+const props = defineProps<{ fileId: string; annotations?: AnnotationSnapshot; compact?: boolean; monochrome?: boolean; embedded?: boolean }>();
 const instance = getCurrentInstance();
 const src = ref(''), failed = ref(false), marked = ref(false), expanded = ref(false), zoom = ref(1);
 const selected = ref<DetectionBox | null>(null);
@@ -51,7 +51,7 @@ onMounted(() => { measure(); uni.onWindowResize(measure); });
 onUnmounted(() => uni.offWindowResize(measure));
 </script>
 <template>
-  <view class="photo-panel" :class="{expanded, monochrome}">
+  <view class="photo-panel" :class="{ expanded, monochrome, embedded: embedded && !expanded }">
     <view class="row between photo-controls">
       <text class="card-title grow">本次舌象</text>
       <button class="outline button-small" @tap="marked=!marked">{{marked?'查看原图':'查看标注'}}</button>
@@ -81,6 +81,14 @@ onUnmounted(() => uni.offWindowResize(measure));
 </template>
 <style scoped>
 .photo-panel { margin-bottom: 20rpx; padding: 24rpx 28rpx; background: var(--surface); border: 1rpx solid var(--border); border-radius: 24rpx; }
+.photo-panel.embedded {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.embedded .photo-controls .secondary { background: var(--tint); }
+.embedded .annotation-stage { background: var(--tint); border-radius: 18rpx; }
 .photo-controls { gap: 8rpx; margin-bottom: 16rpx; flex-wrap: wrap; }
 .photo-controls button { font-size: 23rpx; padding: 8rpx 14rpx; white-space: nowrap; }
 .photo-controls .card-title { min-width: 120rpx; }

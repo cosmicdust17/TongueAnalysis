@@ -1,3 +1,4 @@
+import { beijingClock } from "./beijing-date";
 import type { Uploaded } from "@/types";
 export const BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
@@ -5,12 +6,21 @@ export const BASE_URL = (
 export function authHeader() {
   return { Authorization: `Bearer ${uni.getStorageSync("token") || ""}` };
 }
-function errorMessage(data: unknown): string {
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number, readonly code?: string) {
+    super(message);
+  }
+}
+
+function errorMessage(data: unknown, status: number): string {
   const detail = (data as { detail?: unknown })?.detail;
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail)) return "输入内容格式不正确，请检查后重试";
   if (detail && typeof detail === "object" && "message" in detail)
     return String(detail.message);
+  if (status === 403) return "没有访问权限";
+  if (status === 404) return "记录不存在";
+  if (status === 503) return "业务数据库暂时不可用，请稍后重试";
   return "请求失败，请稍后重试";
 }
 function rejected(status: number, data: unknown) {
@@ -19,7 +29,9 @@ function rejected(status: number, data: unknown) {
     uni.removeStorageSync("user");
     uni.reLaunch({ url: "/pages/login/index" });
   }
-  return new Error(errorMessage(data));
+  const detail = (data as { detail?: { code?: unknown } })?.detail;
+  const code = typeof detail?.code === "string" ? detail.code : undefined;
+  return new ApiError(errorMessage(data, status), status, code);
 }
 export function api<T>(
   path: string,
@@ -95,9 +107,8 @@ export function toastError(error: unknown) {
   });
 }
 export function dateText(value: string, short = false) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  const c = new Date(d.getTime() + 8 * 3600000);
+  const c = beijingClock(value);
+  if (Number.isNaN(c.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
   const day = pad(c.getUTCMonth() + 1) + "/" + pad(c.getUTCDate());
   return (

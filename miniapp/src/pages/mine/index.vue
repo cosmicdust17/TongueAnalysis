@@ -37,7 +37,7 @@ async function logout() {
 }
 </script>
 <template>
-  <view class="page with-nav mine-page">
+  <view class="page olive-sheet with-nav mine-page">
     <view class="panel row profile-card">
       <view class="avatar"><AppIcon name="user" :size="58" /></view>
       <view class="grow">
@@ -50,7 +50,6 @@ async function logout() {
     <view v-if="!isUser" class="card-title section">管理账号</view>
     <view class="panel menu-list">
       <button class="menu" hover-class="menu-pressed" @tap="go('/subpackages/common/profile')">
-        <AppIcon name="user" :size="36" />
         <view class="grow">
           <view>{{ isUser ? "个人资料" : "账号信息" }}</view>
           <view class="menu-description">修改昵称、年龄和性别</view>
@@ -58,7 +57,6 @@ async function logout() {
         <text class="chevron" aria-hidden="true">›</text>
       </button>
       <button v-if="!isUser" class="menu" hover-class="menu-pressed" @tap="go('/subpackages/common/activity')">
-        <AppIcon name="document" :size="36" />
         <view class="grow">
           <view>我的操作记录</view>
           <view class="menu-description">查看{{ auth.user?.role === "knowledge_admin" ? "知识管理" : "运维" }}操作记录</view>
@@ -66,7 +64,6 @@ async function logout() {
         <text class="chevron" aria-hidden="true">›</text>
       </button>
       <button class="menu" hover-class="menu-pressed" @tap="go('/subpackages/common/security')">
-        <AppIcon name="lock" :size="36" />
         <view class="grow">
           <view>登录安全</view>
           <view class="menu-description">管理登录密码</view>
@@ -74,7 +71,6 @@ async function logout() {
         <text class="chevron" aria-hidden="true">›</text>
       </button>
       <button class="menu" hover-class="menu-pressed" @tap="go('/subpackages/common/help')">
-        <AppIcon name="help" :size="36" />
         <view class="grow">
           <view>使用帮助</view>
           <view class="menu-description">拍摄方法与报告说明</view>
@@ -88,19 +84,19 @@ async function logout() {
 </template>
 
 <style scoped>
-.profile-card { gap: 24rpx; padding: 28rpx 24rpx; margin-bottom: 26rpx; border: 0; }
+.profile-card { gap: 24rpx; padding: 30rpx 24rpx; margin-bottom: 20rpx; border: 0; background: var(--tint); }
 .profile-card .avatar { width: 112rpx; height: 112rpx; }
 .profile-card .avatar :deep(.app-icon) { width: 58rpx !important; height: 58rpx !important; }
 .nickname { font-size: 32rpx; font-weight: 600; overflow-wrap: anywhere; line-height: 1.4; }
 .identity-tag { font-size: var(--font-caption); margin-top: 4rpx; padding: 0; color: var(--primary); background: transparent; }
 .profile-detail { margin-top: 4rpx; color: var(--secondary-ink); overflow-wrap: anywhere; }
-.menu-list { padding: 0 24rpx; border: 0; }
-.menu { width: 100%; min-height: 114rpx; background: var(--surface); color: var(--ink); padding: 18rpx 0; text-align: left; border: 0; border-radius: 0; line-height: 1.45; }
+.menu-list { padding: 0 24rpx; border: 0; border-radius: 20rpx; }
+.menu { width: 100%; min-height: 108rpx; background: var(--surface); color: var(--ink); padding: 18rpx 0; text-align: left; border: 0; border-radius: 0; line-height: 1.45; }
 .menu::after { border: 0; }
 .menu.menu-pressed { opacity: 0.72; }
 .menu-list .menu + .menu { border-top: 1rpx solid var(--border); }
 .menu .grow { font-size: var(--font-body); font-weight: 600; }
 .menu-description { font-size: var(--font-secondary); color: var(--secondary-ink); margin-top: 5rpx; font-weight: 400; }
-.menu .chevron { font-size: 34rpx; }
-.logout { margin-top: 14rpx; border-color: #b6c8bb; background: transparent; }
+.menu .chevron { color: var(--accent); font-size: 36rpx; }
+.logout { margin-top: 14rpx; border-color: var(--border); background: transparent; }
 </style>

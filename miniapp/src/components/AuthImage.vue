@@ -9,12 +9,15 @@ watch(
   async (value) => {
     src.value = "";
     failed.value = false;
-    if (!value) return;
+    if (!value) {
+      failed.value = true;
+      return;
+    }
     try {
       const path = await download("/uploads/" + value + "/content");
       if (props.fileId === value) src.value = path;
     } catch {
-      failed.value = true;
+      if (props.fileId === value) failed.value = true;
     }
   },
   { immediate: true },
@@ -35,11 +38,11 @@ watch(
   border-radius: 18rpx;
 }
 .image-placeholder {
-  background: #edf6f1;
+  background: var(--tint);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22rpx;
-  color: #718078;
+  color: var(--muted);
 }
 </style>
